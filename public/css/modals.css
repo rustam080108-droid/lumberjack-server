@@ -169,3 +169,16 @@
     background: rgba(255,255,255,0.05);
     border-radius: 8px;
 }
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;  /* Меньше чем у дропдауна, но все равно высоко */
+}

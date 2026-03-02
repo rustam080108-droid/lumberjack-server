@@ -91,3 +91,36 @@
     transform: translateY(-2px);
     box-shadow: 0 5px 20px #4caf50;
 }
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 280px;
+    background: rgba(20, 40, 20, 0.98);
+    backdrop-filter: blur(12px);
+    border: 2px solid #4caf50;
+    border-radius: 16px;
+    padding: 15px;
+    display: none;
+    z-index: 999999;  /* ОЧЕНЬ ВЫСОКИЙ z-index */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Добавь этот стиль для гарантии */
+.profile-dropdown[style*="display: block"] {
+    display: block !important;
+    z-index: 999999 !important;
+}
+
+/* Стрелочка у дропдауна (опционально) */
+.profile-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #4caf50;
+}
