@@ -1,26 +1,31 @@
-// ========== КОШЕЛЕК (УЛЬТРА-ПРОСТАЯ ВЕРСИЯ) ==========
+// ========== КОШЕЛЕК (РАБОЧАЯ ВЕРСИЯ С LOCALSTORAGE) ==========
 
-console.log('✅ wallet.js загружен');
+console.log('✅ wallet.js загружен (исправленная версия)');
 
 let currentRequestId = null;
 let checkInterval = null;
+
+// Функция получения userId из localStorage
+function getUserId() {
+    return localStorage.getItem('userId');
+}
 
 // Пополнение
 window.createDeposit = async function() {
     console.log('▶️ createDeposit вызвана');
     
-    // Проверяем userId
-    console.log('userId (глобальный):', window.userId);
-    console.log('userData:', window.userData);
+    const userId = getUserId();
+    console.log('userId из localStorage:', userId);
     
-    if (!window.userId) {
-        alert('Ошибка: userId не определён. Вы вошли?');
+    if (!userId) {
+        alert('Вы не авторизованы. Войдите в систему.');
+        showAuthModal();
         return;
     }
     
     const amountInput = document.getElementById('depositSum');
     if (!amountInput) {
-        alert('Поле depositSum не найдено!');
+        alert('Поле суммы не найдено!');
         return;
     }
     
@@ -28,13 +33,12 @@ window.createDeposit = async function() {
     console.log('Сумма:', amount);
     
     if (isNaN(amount) || amount < 100) {
-        alert('Сумма должна быть не меньше 100');
+        alert('Минимальная сумма 100 ₽');
         return;
     }
     
-    // Отправляем запрос
     const body = JSON.stringify({
-        userId: window.userId,
+        userId: userId,
         amount: amount,
         method: 'card'
     });
@@ -61,13 +65,12 @@ window.createDeposit = async function() {
         }
     } catch (e) {
         console.error('Ошибка fetch:', e);
-        alert('Ошибка соединения');
+        alert('Ошибка соединения с сервером');
     }
 };
 
 // Вывод
 window.createWithdraw = async function() {
-    console.log('▶️ createWithdraw вызвана');
     alert('Функция вывода временно отключена для диагностики');
 };
 
@@ -84,7 +87,10 @@ function openChat() {
     
     checkInterval = setInterval(async () => {
         try {
-            const response = await fetch(`/api/deposit/user/${window.userId}`);
+            const userId = getUserId();
+            if (!userId) return;
+            
+            const response = await fetch(`/api/deposit/user/${userId}`);
             const data = await response.json();
             const request = data.requests?.find(r => r.id === currentRequestId);
             
