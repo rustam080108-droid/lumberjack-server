@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LumberJack • Лесная Империя</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body><!-- Добавь в начало сайта, перед входом -->
+<div class="auth-modal" id="authModal">
+    <div class="auth-form glass">
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('login')">Вход</button>
+            <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
+        </div>
+        
+        <!-- Форма входа -->
+        <div id="loginForm" class="auth-content">
+            <h3>Вход в аккаунт</h3>
+            <input type="email" id="loginEmail" placeholder="Email">
+            <input type="password" id="loginPassword" placeholder="Пароль">
+            <button onclick="login()">Войти</button>
+        </div>
+        
+                <!-- Форма регистрации -->
+        <div id="registerForm" style="display: none;" class="auth-content">
+            <h3>Регистрация</h3>
+            <input type="email" id="regEmail" placeholder="Email">
+            <input type="password" id="regPassword" placeholder="Пароль (мин. 6 символов)">
+            <input type="password" id="regConfirm" placeholder="Подтверждение пароля">
+            <button class="btn-code" onclick="sendVerificationCode()">📧 Получить код</button>
+        </div>
+    </div>
+</div>
+<!-- Модалка для ввода кода подтверждения -->
+<div class="modal-overlay" id="verificationModal">
+    <div class="modal glass">
+        <div class="modal-header">
+            <h3>Подтверждение email</h3>
+            <button class="modal-close" onclick="hideModal('verificationModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <p style="color: white; text-align: center; margin-bottom: 20px;">
+                Код отправлен на <strong id="verificationEmail"></strong>
+            </p>
+            <div class="input-field">
+                <label>Введите 6-значный код</label>
+                <input type="text" id="verificationCode" maxlength="6" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 5px;">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="hideModal('verificationModal')">Отмена</button>
+            <button class="btn-primary" onclick="verifyCode()">Подтвердить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика сайта (реальные цифры) -->
+<div class="stats-bar glass">
+    <div><i class="fas fa-users"></i> Участников: <span id="totalUsers">0</span></div>
+    <div><i class="fas fa-chart-line"></i> Вложений: <span id="totalInvestments">0</span> ₽</div>
+    <div><i class="fas fa-clock"></i> Обновлено: <span id="statsTime">только что</span></div>
+</div>
+    <!-- Анимированный фон -->
+    <div class="forest-bg">
+        <div class="trees"></div>
+        <div class="fog"></div>
+        <div class="particles"></div>
+    </div>
+
+    <div class="container">
+        <!-- Премиум шапка -->
+        <div class="header glass">
+            <div class="logo">
+                <i class="fas fa-tree"></i>
+                <span>LUMBERJACK</span>
+                <div class="logo-badge">BETA</div>
+            </div>
+            
+            <div class="user-panel">
+                <div class="balance-premium">
+                    <i class="fas fa-coins"></i>
+                    <span id="balance">0</span>
+                    <span class="currency">₽</span>
+                </div>
+                
+                <div class="action-group">
+                    <button class="action-btn plus" onclick="showModal('deposit')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="action-btn minus" onclick="showModal('withdraw')">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Профиль и рефералы -->
+        <div class="profile-grid">
+            <div class="profile-card glass">
+                <div class="card-icon"><i class="fas fa-id-card"></i></div>
+                <div class="card-content">
+                    <span class="card-label">Ваш ID</span>
+                    <span class="card-value" id="userId">0</span>
+                </div>
+            </div>
+            
+            <div class="profile-card glass">
+                <div class="card-icon"><i class="fas fa-users"></i></div>
+                <div class="card-content">
+                    <span class="card-label">Рефералы</span>
+                    <span class="card-value" id="referrals">0</span>
+                </div>
+            </div>
+            
+            <div class="profile-card glass">
+                <div class="card-icon"><i class="fas fa-gift"></i></div>
+                <div class="card-content">
+                    <span class="card-label">Заработано</span>
+                    <span class="card-value" id="referralEarn">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Реферальная ссылка -->
+        <div class="referral-block glass">
+            <div class="ref-title">
+                <i class="fas fa-link"></i>
+                <span>Приглашай друзей и получай 10%</span>
+            </div>
+            <div class="ref-input-group">
+                <input type="text" id="refLink" readonly value="lumberjack.com/ref/">
+                <button class="copy-btn" onclick="copyRef()">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Прогресс лесопилки -->
+        <div class="mill-progress glass">
+            <div class="progress-header">
+                <h3><i class="fas fa-forest"></i> Лесопилка</h3>
+                <div class="level-badge">Уровень 4</div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-info">
+                    <span><i class="fas fa-tree"></i> <span id="totalFund">0</span> ₽</span>
+                    <span><i class="fas fa-bullseye"></i> 2,500,000 ₽</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Магазин -->
+        <div class="section-header">
+            <h2><i class="fas fa-store"></i> Магазин инструментов</h2>
+            <div class="section-line"></div>
+        </div>
+        
+        <div class="shop-grid" id="shop"></div>
+
+        <!-- Инвестиции -->
+        <div class="section-header">
+            <h2><i class="fas fa-chart-line"></i> Активные инвестиции</h2>
+            <div class="section-line"></div>
+        </div>
+        
+        <div class="investments-list glass" id="investments"></div>
+
+        <!-- Сбор прибыли -->
+        <div class="profit-section">
+            <div class="profit-card glass">
+                <div class="profit-info">
+                    <i class="fas fa-hand-holding-heart"></i>
+                    <div>
+                        <span class="profit-label">Доступно к сбору</span>
+                        <span class="profit-amount"><span id="profitToday">0</span> ₽</span>
+                    </div>
+                </div>
+                <button class="profit-btn" onclick="collectProfit()">
+                    <i class="fas fa-arrow-right"></i>
+                    Собрать
+                </button>
+            </div>
+        </div>
+
+        <!-- История -->
+        <div class="section-header">
+            <h2><i class="fas fa-clock"></i> История операций</h2>
+            <div class="section-line"></div>
+        </div>
+        
+        <div class="history-list glass" id="history"></div>
+    </div>
+
+    <!-- Модалка пополнения -->
+    <div class="modal-overlay" id="modalDeposit">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3>Пополнение баланса</h3>
+                <button class="modal-close" onclick="hideModal('deposit')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-methods">
+                    <div class="pay-method active" onclick="selectMethod(this, 'visa')">
+                        <i class="fab fa-cc-visa"></i>
+                        <span>Visa</span>
+                        <span class="method-badge">0%</span>
+                    </div>
+                    <div class="pay-method" onclick="selectMethod(this, 'mastercard')">
+                        <i class="fab fa-cc-mastercard"></i>
+                        <span>Mastercard</span>
+                        <span class="method-badge">0%</span>
+                    </div>
+                    <div class="pay-method" onclick="selectMethod(this, 'mir')">
+                        <i class="fas fa-credit-card"></i>
+                        <span>МИР</span>
+                        <span class="method-badge">0%</span>
+                    </div>
+                </div>
+                
+                <div class="input-field">
+                    <label>Сумма пополнения</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="depositSum" value="1000" min="100" step="100">
+                        <span class="input-currency">₽</span>
+                    </div>
+                </div>
+                
+                <div class="info-message">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Минимальная сумма: 100 ₽</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="hideModal('deposit')">Отмена</button>
+                <button class="btn-primary" onclick="createDeposit()">
+                    <i class="fas fa-paper-plane"></i>
+                    Создать заявку
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка вывода -->
+    <div class="modal-overlay" id="modalWithdraw">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3>Вывод средств</h3>
+                <button class="modal-close" onclick="hideModal('withdraw')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-field">
+                    <label>Сумма вывода</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="withdrawSum" value="1000" min="100" max="50000" step="100" oninput="updateWithdrawNet()">
+                        <span class="input-currency">₽</span>
+                    </div>
+                </div>
+                
+                <div class="input-field">
+                    <label>Номер карты</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label">Комиссия</span>
+                        <span class="info-value">3%</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">К получению</span>
+                        <span class="info-value highlight" id="withdrawNet">970 ₽</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="hideModal('withdraw')">Отмена</button>
+                <button class="btn-primary" onclick="createWithdraw()">
+                    <i class="fas fa-arrow-up"></i>
+                    Вывести
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка покупки -->
+    <div class="modal-overlay" id="modalBuy">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3>Подтверждение покупки</h3>
+                <button class="modal-close" onclick="hideModal('buy')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="buyContent"></div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="hideModal('buy')">Отмена</button>
+                <button class="btn-primary" onclick="confirmBuy()">
+                    <i class="fas fa-check"></i>
+                    Подтвердить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка чата -->
+    <div class="modal-overlay" id="modalChat">
+        <div class="modal glass chat-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-comments"></i> Поддержка</h3>
+                <button class="modal-close" onclick="hideModal('chat')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="payment-details" id="paymentInfo"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="hideModal('chat')">Закрыть</button>
+                <button class="btn-primary" id="payBtn" style="display: none;" onclick="confirmPayment()">
+                    <i class="fas fa-check-circle"></i>
+                    Я оплатил
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

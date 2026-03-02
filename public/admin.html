@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LumberJack • Админ-панель</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Дополнительные стили для админки */
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: rgba(30, 50, 30, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(120, 200, 120, 0.25);
+            border-radius: 28px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .admin-header h1 {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-header h1 i {
+            color: #ffd700;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(30, 50, 30, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(120, 200, 120, 0.25);
+            border-radius: 24px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-card h3 {
+            font-size: 16px;
+            opacity: 0.7;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffd700;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .admin-tab {
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+        
+        .admin-tab:hover {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4caf50;
+        }
+        
+        .admin-tab.active {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border-color: #4caf50;
+            box-shadow: 0 0 30px #4caf50;
+        }
+        
+        .requests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .request-card {
+            background: rgba(30, 50, 30, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 25px;
+            color: white;
+            transition: 0.3s;
+        }
+        
+        .request-card:hover {
+            transform: translateY(-5px);
+            border-color: #4caf50;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .request-badge {
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-deposit {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        
+        .badge-withdraw {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+        
+        .badge-pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+        
+        .badge-paid {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+            border: 1px solid #2196f3;
+        }
+        
+        .request-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+        
+        .request-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn-approve {
+            flex: 1;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px #4caf50;
+        }
+        
+        .btn-reject {
+            flex: 1;
+            background: linear-gradient(135deg, #f44336, #b71c1c);
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px #f44336;
+        }
+        
+        .payment-details-input {
+            margin: 15px 0;
+        }
+        
+        .payment-details-input textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: white;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .payment-details-input textarea:focus {
+            outline: none;
+            border-color: #4caf50;
+            box-shadow: 0 0 30px #4caf5040;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 100px auto;
+            background: rgba(30, 50, 30, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(120, 200, 120, 0.25);
+            border-radius: 28px;
+            padding: 40px;
+            color: white;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 16px 20px;
+            margin: 10px 0 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .login-form input:focus {
+            outline: none;
+            border-color: #4caf50;
+            box-shadow: 0 0 30px #4caf5040;
+        }
+        
+        .login-form button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .login-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px #4caf50;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: #f44336;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+            grid-column: 1 / -1;
+        }
+        
+        .request-id {
+            font-family: monospace;
+            font-size: 14px;
+            color: #8bc34a;
+        }
+    </style>
+</head>
+<body>
+    <div class="forest-bg">
+        <div class="trees"></div>
+        <div class="fog"></div>
+    </div>
+
+    <!-- Форма входа -->
+    <div id="loginSection" class="login-form">
+        <h2><i class="fas fa-crown"></i> Админ-панель</h2>
+        <input type="text" id="adminUsername" placeholder="Логин" value="admin">
+        <input type="password" id="adminPassword" placeholder="Пароль" value="admin123">
+        <button onclick="login()">Войти</button>
+    </div>
+
+    <!-- Админ-панель (скрыта до входа) -->
+    <div id="adminSection" style="display: none;">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>
+                    <i class="fas fa-crown"></i>
+                    LumberJack • Администрирование
+                </h1>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+
+            <!-- Статистика -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3><i class="fas fa-users"></i> Всего пользователей</h3>
+                    <div class="stat-value" id="totalUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-clock"></i> Ожидают пополнения</h3>
+                    <div class="stat-value" id="pendingDeposits">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-clock"></i> Ожидают вывода</h3>
+                    <div class="stat-value" id="pendingWithdraws">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-coins"></i> Общий баланс</h3>
+                    <div class="stat-value" id="totalBalance">0 ₽</div>
+                </div>
+            </div>
+
+            <!-- Табы -->
+            <div class="admin-tabs">
+                <div class="admin-tab active" onclick="switchTab('deposits')">
+                    <i class="fas fa-arrow-down"></i> Пополнения
+                </div>
+                <div class="admin-tab" onclick="switchTab('withdraws')">
+                    <i class="fas fa-arrow-up"></i> Выводы
+                </div>
+            </div>
+
+            <!-- Список заявок -->
+            <div id="requestsContainer" class="requests-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        let currentTab = 'deposits';
+        let updateInterval = null;
+
+        // ========== АВТОРИЗАЦИЯ ==========
+        async function login() {
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+
+            const response = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminSection').style.display = 'block';
+                
+                // Загружаем данные
+                loadStats();
+                loadRequests();
+                
+                // Обновляем каждые 5 секунд
+                if (updateInterval) clearInterval(updateInterval);
+                updateInterval = setInterval(() => {
+                    loadStats();
+                    loadRequests();
+                }, 5000);
+            } else {
+                alert('Неверный логин или пароль');
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/admin/logout', { method: 'POST' });
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('adminSection').style.display = 'none';
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+        }
+
+        // ========== СТАТИСТИКА ==========
+        async function loadStats() {
+            const response = await fetch('/api/admin/stats');
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('totalUsers').textContent = data.stats.totalUsers;
+                document.getElementById('pendingDeposits').textContent = data.stats.pendingDeposits;
+                document.getElementById('pendingWithdraws').textContent = data.stats.pendingWithdraws;
+                document.getElementById('totalBalance').textContent = formatNumber(data.stats.totalBalance) + ' ₽';
+            }
+        }
+
+        // ========== ЗАЯВКИ ==========
+        async function loadRequests() {
+            const response = await fetch('/api/admin/requests');
+            const data = await response.json();
+
+            renderRequests(data.deposits || [], data.withdraws || []);
+        }
+
+        function renderRequests(deposits, withdraws) {
+            const container = document.getElementById('requestsContainer');
+            const requests = currentTab === 'deposits' ? deposits : withdraws;
+
+            if (requests.length === 0) {
+                container.innerHTML = '<div class="empty-state">Нет активных заявок</div>';
+                return;
+            }
+
+            container.innerHTML = requests.map(req => {
+                if (currentTab === 'deposits') {
+                    return renderDepositRequest(req);
+                } else {
+                    return renderWithdrawRequest(req);
+                }
+            }).join('');
+        }
+
+        function renderDepositRequest(req) {
+            const date = new Date(req.date).toLocaleString();
+            let actions = '';
+
+            if (req.status === 'pending') {
+                actions = `
+                    <div class="payment-details-input">
+                        <textarea id="details-${req.id}" placeholder="Введите реквизиты для оплаты..."></textarea>
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn-approve" onclick="sendPaymentDetails(${req.id})">
+                            <i class="fas fa-paper-plane"></i> Отправить
+                        </button>
+                        <button class="btn-reject" onclick="rejectRequest('deposit', ${req.id})">
+                            <i class="fas fa-times"></i> Отклонить
+                        </button>
+                    </div>
+                `;
+            } else if (req.status === 'paid') {
+                actions = `
+                    <div class="request-actions">
+                        <button class="btn-approve" onclick="completeRequest('deposit', ${req.id}, ${req.userId}, ${req.amount})">
+                            <i class="fas fa-check"></i> Зачислить
+                        </button>
+                        <button class="btn-reject" onclick="rejectRequest('deposit', ${req.id})">
+                            <i class="fas fa-times"></i> Отклонить
+                        </button>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="request-card">
+                    <div class="request-header">
+                        <span class="request-badge badge-deposit">
+                            <i class="fas fa-arrow-down"></i> Пополнение
+                        </span>
+                        <span class="request-badge badge-${req.status}">
+                            ${getStatusText(req.status)}
+                        </span>
+                    </div>
+                    <div class="request-row">
+                        <span>ID заявки:</span>
+                        <span class="request-id">#${req.id}</span>
+                    </div>
+                    <div class="request-row">
+                        <span>Пользователь:</span>
+                        <strong>ID: ${req.userId}</strong>
+                    </div>
+                    <div class="request-row">
+                        <span>Сумма:</span>
+                        <strong style="color: gold;">${formatNumber(req.amount)} ₽</strong>
+                    </div>
+                    <div class="request-row">
+                        <span>Метод:</span>
+                        <strong>${req.method}</strong>
+                    </div>
+                    <div class="request-row">
+                        <span>Дата:</span>
+                        <span>${date}</span>
+                    </div>
+                    ${actions}
+                </div>
+            `;
+        }
+
+        function renderWithdrawRequest(req) {
+            const date = new Date(req.date).toLocaleString();
+            let actions = '';
+
+            if (req.status === 'pending') {
+                actions = `
+                    <div class="request-actions">
+                        <button class="btn-approve" onclick="completeRequest('withdraw', ${req.id}, ${req.userId}, ${req.amount})">
+                            <i class="fas fa-check"></i> Подтвердить
+                        </button>
+                        <button class="btn-reject" onclick="rejectRequest('withdraw', ${req.id})">
+                            <i class="fas fa-times"></i> Отклонить
+                        </button>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="request-card">
+                    <div class="request-header">
+                        <span class="request-badge badge-withdraw">
+                            <i class="fas fa-arrow-up"></i> Вывод
+                        </span>
+                        <span class="request-badge badge-${req.status}">
+                            ${getStatusText(req.status)}
+                        </span>
+                    </div>
+                    <div class="request-row">
+                        <span>ID заявки:</span>
+                        <span class="request-id">#${req.id}</span>
+                    </div>
+                    <div class="request-row">
+                        <span>Пользователь:</span>
+                        <strong>ID: ${req.userId}</strong>
+                    </div>
+                    <div class="request-row">
+                        <span>Сумма:</span>
+                        <strong style="color: gold;">${formatNumber(req.amount)} ₽</strong>
+                    </div>
+                    <div class="request-row">
+                        <span>Карта:</span>
+                        <strong>${req.card}</strong>
+                    </div>
+                    <div class="request-row">
+                        <span>Дата:</span>
+                        <span>${date}</span>
+                    </div>
+                    ${actions}
+                </div>
+            `;
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'pending': '⏳ Ожидание',
+                'paid': '💰 Оплачено',
+                'completed': '✅ Выполнено',
+                'rejected': '❌ Отклонено'
+            };
+            return texts[status] || status;
+        }
+
+        // ========== ДЕЙСТВИЯ С ЗАЯВКАМИ ==========
+        async function sendPaymentDetails(requestId) {
+            const details = document.getElementById(`details-${requestId}`).value;
+            if (!details.trim()) {
+                alert('Введите реквизиты для оплаты');
+                return;
+            }
+
+            await fetch('/api/deposit/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    requestId: requestId,
+                    paymentDetails: details,
+                    status: 'pending'
+                })
+            });
+
+            loadRequests();
+        }
+
+        async function completeRequest(type, requestId, userId, amount) {
+            if (!confirm('Подтвердить заявку?')) return;
+
+            await fetch('/api/admin/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: type,
+                    requestId: requestId,
+                    userId: userId,
+                    amount: amount
+                })
+            });
+
+            loadStats();
+            loadRequests();
+        }
+
+        async function rejectRequest(type, requestId) {
+            if (!confirm('Отклонить заявку?')) return;
+
+            await fetch('/api/admin/reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: type,
+                    requestId: requestId
+                })
+            });
+
+            loadRequests();
+        }
+
+        // ========== ПЕРЕКЛЮЧЕНИЕ ТАБОВ ==========
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            loadRequests();
+        }
+
+        // ========== ФОРМАТИРОВАНИЕ ==========
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
+        async function checkAuth() {
+            const response = await fetch('/api/admin/check');
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminSection').style.display = 'block';
+                loadStats();
+                loadRequests();
+                
+                updateInterval = setInterval(() => {
+                    loadStats();
+                    loadRequests();
+                }, 5000);
+            }
+        }
+
+        // Проверяем авторизацию при загрузке
+        checkAuth();
+    </script>
+</body>
+</html>
