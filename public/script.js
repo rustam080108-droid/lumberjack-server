@@ -31,7 +31,6 @@ let currentEmail = '';
 window.onload = async function() {
     console.log('Страница загружена');
     
-    // Проверяем авторизацию
     const savedUserId = localStorage.getItem('userId');
     if (savedUserId) {
         userId = savedUserId;
@@ -41,26 +40,58 @@ window.onload = async function() {
         showAuthModal();
     }
     
-    // Загружаем статистику
     loadStats();
     
-    // Проверяем реферала
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
     if (ref) {
         sessionStorage.setItem('referrer', ref);
     }
     
-    // Обновляем UI
     updateUI();
     renderShop();
     renderInvestments();
     renderHistory();
     
-    // Запускаем периодическое обновление
     setInterval(loadStats, 30000);
     setInterval(checkRequests, 5000);
 };
+
+// ========== ФУНКЦИИ ДЛЯ МОДАЛОК (ВАЖНО!) ==========
+function showModal(type) {
+    console.log('Открываем модалку:', type);
+    const modal = document.getElementById(`modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    if (modal) {
+        modal.style.display = 'flex';
+        console.log('Модалка найдена и открыта');
+    } else {
+        console.error('Модалка не найдена:', `modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    }
+}
+
+function hideModal(type) {
+    console.log('Закрываем модалку:', type);
+    if (type === 'chat' && checkInterval) {
+        clearInterval(checkInterval);
+        checkInterval = null;
+    }
+    
+    const modal = document.getElementById(`modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Закрытие по клику вне
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-overlay')) {
+        if (e.target.id === 'modalChat' && checkInterval) {
+            clearInterval(checkInterval);
+            checkInterval = null;
+        }
+        e.target.style.display = 'none';
+    }
+});
 
 // ========== АВТОРИЗАЦИЯ ==========
 function showAuthModal() {
@@ -88,16 +119,19 @@ function switchAuthTab(tab) {
 async function sendVerificationCode() {
     const email = document.getElementById('regEmail').value;
     
+    console.log('sendVerificationCode вызван с email:', email);
+    
     if (!email) {
         showError('Введите email');
         return;
     }
     
-    // Показываем модалку с кодом
+    // Сначала показываем модалку
     document.getElementById('verificationEmail').textContent = email;
     currentEmail = email;
     showModal('verification');
     
+    // Отправляем запрос на сервер
     const response = await fetch('/api/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,6 +139,8 @@ async function sendVerificationCode() {
     });
     
     const data = await response.json();
+    console.log('Ответ от сервера:', data);
+    
     if (!data.success) {
         showError(data.error);
         hideModal('verification');
@@ -117,6 +153,8 @@ async function verifyCode() {
     const code = document.getElementById('verificationCode').value;
     const password = document.getElementById('regPassword').value;
     const confirm = document.getElementById('regConfirm').value;
+    
+    console.log('verifyCode вызван с кодом:', code);
     
     if (!code || code.length !== 6) {
         showError('Введите 6-значный код');
@@ -144,12 +182,13 @@ async function verifyCode() {
     });
     
     const data = await response.json();
+    console.log('Ответ от сервера при проверке кода:', data);
+    
     if (data.success) {
         hideModal('verification');
         showSuccess('Регистрация успешна! Теперь войдите в аккаунт.');
         switchAuthTab('login');
         
-        // Очищаем поля
         document.getElementById('regEmail').value = '';
         document.getElementById('regPassword').value = '';
         document.getElementById('regConfirm').value = '';
@@ -739,33 +778,6 @@ async function confirmPayment() {
     
     document.getElementById('payBtn').style.display = 'none';
 }
-
-// ========== УПРАВЛЕНИЕ МОДАЛКАМИ ==========
-function showModal(type) {
-    const modal = document.getElementById(`modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
-    if (modal) modal.style.display = 'flex';
-}
-
-function hideModal(type) {
-    if (type === 'chat' && checkInterval) {
-        clearInterval(checkInterval);
-        checkInterval = null;
-    }
-    
-    const modal = document.getElementById(`modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
-    if (modal) modal.style.display = 'none';
-}
-
-// Закрытие по клику вне
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-overlay')) {
-        if (e.target.id === 'modalChat' && checkInterval) {
-            clearInterval(checkInterval);
-            checkInterval = null;
-        }
-        e.target.style.display = 'none';
-    }
-});
 
 // ========== УВЕДОМЛЕНИЯ ==========
 function showSuccess(title, message = '') {
