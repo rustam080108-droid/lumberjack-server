@@ -57,7 +57,7 @@ window.onload = async function() {
     setInterval(checkRequests, 5000);
 };
 
-// ========== ФУНКЦИИ ДЛЯ МОДАЛОК (ВАЖНО!) ==========
+// ========== ФУНКЦИИ ДЛЯ МОДАЛОК ==========
 function showModal(type) {
     console.log('Открываем модалку:', type);
     const modal = document.getElementById(`modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
@@ -126,11 +126,6 @@ async function sendVerificationCode() {
         return;
     }
     
-    // Сначала показываем модалку
-    document.getElementById('verificationEmail').textContent = email;
-    currentEmail = email;
-    showModal('verification');
-    
     // Отправляем запрос на сервер
     const response = await fetch('/api/send-code', {
         method: 'POST',
@@ -141,11 +136,18 @@ async function sendVerificationCode() {
     const data = await response.json();
     console.log('Ответ от сервера:', data);
     
-    if (!data.success) {
-        showError(data.error);
-        hideModal('verification');
-    } else {
+    if (data.success) {
+        // Скрываем окно регистрации
+        hideAuthModal();
+        
+        // Показываем окно с кодом
+        document.getElementById('verificationEmail').textContent = email;
+        currentEmail = email;
+        showModal('verification');
+        
         showSuccess('Код отправлен на почту!');
+    } else {
+        showError(data.error);
     }
 }
 
@@ -189,6 +191,7 @@ async function verifyCode() {
         showSuccess('Регистрация успешна! Теперь войдите в аккаунт.');
         switchAuthTab('login');
         
+        // Очищаем поля
         document.getElementById('regEmail').value = '';
         document.getElementById('regPassword').value = '';
         document.getElementById('regConfirm').value = '';
