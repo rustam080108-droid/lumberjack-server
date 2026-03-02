@@ -76,24 +76,22 @@ db.serialize(() => {
 
     db.run(`CREATE TABLE IF NOT EXISTS deposit_requests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
+        userId TEXT,
         amount INTEGER,
         method TEXT,
         paymentDetails TEXT,
         status TEXT DEFAULT 'pending',
-        date TEXT,
-        FOREIGN KEY(userId) REFERENCES users(id)
+        date TEXT
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS withdraw_requests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
+        userId TEXT,
         amount INTEGER,
         card TEXT,
         fullCard TEXT,
         status TEXT DEFAULT 'pending',
-        date TEXT,
-        FOREIGN KEY(userId) REFERENCES users(id)
+        date TEXT
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS admin (
@@ -311,31 +309,77 @@ app.post('/api/user/update', (req, res) => {
 app.post('/api/deposit/create', (req, res) => {
     const { userId, amount, method } = req.body;
     
+    console.log('📝 Получен запрос на пополнение:', { userId, amount, method });
+    
+    if (!userId || !amount) {
+        return res.json({ success: false, error: 'Не все данные переданы' });
+    }
+    
     db.run(
         `INSERT INTO deposit_requests (userId, amount, method, status, date) VALUES (?, ?, ?, ?, ?)`,
-        [userId, amount, method, 'pending', new Date().toISOString()],
+        [userId, amount, method || 'card', 'pending', new Date().toISOString()],
         function(err) {
-            res.json({ success: !err, requestId: this.lastID });
+            if (err) {
+                console.error('❌ Ошибка при создании заявки:', err);
+                res.json({ success: false, error: err.message });
+            } else {
+                console.log('✅ Заявка создана с ID:', this.lastID);
+                res.json({ success: true, requestId: this.lastID });
+            }
         }
     );
 });
 
 // ========== API: ПОЛУЧИТЬ ЗАЯВКИ ПОЛЬЗОВАТЕЛЯ ==========
 app.get('/api/deposit/user/:userId', (req, res) => {
-    db.all(`SELECT * FROM deposit_requests WHERE userId = ? ORDER BY date DESC`, [req.params.userId], (err, requests) => {
-        res.json({ requests: requests || [] });
+    const userId = req.params.userId;
+    
+    db.all(`SELECT * FROM deposit_requests WHERE userId = ? ORDER BY date DESC`, [userId], (err, requests) => {
+        if (err) {
+            console.error('Ошибка при получении заявок:', err);
+            res.json({ requests: [] });
+        } else {
+            res.json({ requests: requests || [] });
+        }
     });
+});
+
+// ========== API: ОБНОВИТЬ ЗАЯВКУ (ДОБАВИТЬ РЕКВИЗИТЫ) ==========
+app.post('/api/deposit/update', (req, res) => {
+    const { requestId, paymentDetails, status } = req.body;
+    
+    db.run(
+        `UPDATE deposit_requests SET paymentDetails = ?, status = ? WHERE id = ?`,
+        [paymentDetails, status || 'pending', requestId],
+        function(err) {
+            if (err) {
+                console.error('Ошибка при обновлении заявки:', err);
+                res.json({ success: false, error: err.message });
+            } else {
+                res.json({ success: true });
+            }
+        }
+    );
 });
 
 // ========== API: СОЗДАТЬ ЗАЯВКУ НА ВЫВОД ==========
 app.post('/api/withdraw/create', (req, res) => {
     const { userId, amount, card } = req.body;
     
+    if (!userId || !amount || !card) {
+        return res.json({ success: false, error: 'Не все данные переданы' });
+    }
+    
     db.run(
         `INSERT INTO withdraw_requests (userId, amount, card, status, date) VALUES (?, ?, ?, ?, ?)`,
         [userId, amount, card, 'pending', new Date().toISOString()],
         function(err) {
-            res.json({ success: !err, requestId: this.lastID });
+            if (err) {
+                console.error('Ошибка при создании заявки на вывод:', err);
+                res.json({ success: false, error: err.message });
+            } else {
+                res.json({ success: true, requestId: this.lastID });
+            }
         }
     );
 });
@@ -344,12 +388,14 @@ app.post('/api/withdraw/create', (req, res) => {
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     
-    if (username === 'admin' && password === 'admin123') {
-        req.session.admin = true;
-        res.json({ success: true });
-    } else {
-        res.json({ success: false });
-    }
+    db.get(`SELECT * FROM admin WHERE username = ?`, [username], (err, admin) => {
+        if (admin && bcrypt.compareSync(password, admin.password)) {
+            req.session.admin = true;
+            res.json({ success: true });
+        } else {
+            res.json({ success: false, error: 'Неверный логин или пароль' });
+        }
+    });
 });
 
 // ========== API: АДМИН - ПРОВЕРКА ==========
@@ -365,26 +411,22 @@ app.post('/api/admin/logout', (req, res) => {
 
 // ========== API: АДМИН - ПОЛУЧИТЬ ЗАЯВКИ ==========
 app.get('/api/admin/requests', (req, res) => {
-    if (!req.session.admin) return res.json({ success: false });
+    if (!req.session.admin) return res.json({ success: false, error: 'Не авторизован' });
     
-    db.all(`SELECT * FROM deposit_requests WHERE status = 'pending' ORDER BY date DESC`, (err, deposits) => {
+    db.all(`SELECT * FROM deposit_requests WHERE status IN ('pending', 'paid') ORDER BY date DESC`, (err, deposits) => {
         db.all(`SELECT * FROM withdraw_requests WHERE status = 'pending' ORDER BY date DESC`, (err, withdraws) => {
-            res.json({ deposits: deposits || [], withdraws: withdraws || [] });
+            res.json({ 
+                deposits: deposits || [], 
+                withdraws: withdraws || [] 
+            });
         });
     });
 });
 
-// ========== API: АДМИН - ОТПРАВИТЬ РЕКВИЗИТЫ ==========
-app.post('/api/deposit/update', (req, res) => {
-    const { requestId, paymentDetails, status } = req.body;
-    
-    db.run(`UPDATE deposit_requests SET paymentDetails = ?, status = ? WHERE id = ?`,
-        [paymentDetails, status, requestId]);
-    res.json({ success: true });
-});
-
 // ========== API: АДМИН - ЗАВЕРШИТЬ ЗАЯВКУ ==========
 app.post('/api/admin/complete', (req, res) => {
+    if (!req.session.admin) return res.json({ success: false, error: 'Не авторизован' });
+    
     const { type, requestId, userId, amount } = req.body;
     
     if (type === 'deposit') {
@@ -393,6 +435,23 @@ app.post('/api/admin/complete', (req, res) => {
             [amount, amount, userId]);
     } else {
         db.run(`UPDATE withdraw_requests SET status = 'completed' WHERE id = ?`, [requestId]);
+        db.run(`UPDATE users SET balance = balance - ? WHERE userId = ?`,
+            [amount, userId]);
+    }
+    
+    res.json({ success: true });
+});
+
+// ========== API: АДМИН - ОТКЛОНИТЬ ЗАЯВКУ ==========
+app.post('/api/admin/reject', (req, res) => {
+    if (!req.session.admin) return res.json({ success: false, error: 'Не авторизован' });
+    
+    const { type, requestId } = req.body;
+    
+    if (type === 'deposit') {
+        db.run(`UPDATE deposit_requests SET status = 'rejected' WHERE id = ?`, [requestId]);
+    } else {
+        db.run(`UPDATE withdraw_requests SET status = 'rejected' WHERE id = ?`, [requestId]);
     }
     
     res.json({ success: true });
@@ -400,7 +459,7 @@ app.post('/api/admin/complete', (req, res) => {
 
 // ========== API: АДМИН - СТАТИСТИКА ==========
 app.get('/api/admin/stats', (req, res) => {
-    if (!req.session.admin) return res.json({ success: false });
+    if (!req.session.admin) return res.json({ success: false, error: 'Не авторизован' });
     
     db.get(`SELECT COUNT(*) as totalUsers FROM users`, (err, users) => {
         db.get(`SELECT COUNT(*) as pendingDeposits FROM deposit_requests WHERE status = 'pending'`, (err, deposits) => {
