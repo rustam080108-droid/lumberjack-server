@@ -34,11 +34,11 @@
     </div>
 </div>
 <!-- Модалка для ввода кода подтверждения -->
-<div class="modal-overlay" id="verificationModal">
+<div class="modal-overlay" id="modalVerification">  <!-- ← ДОЛЖНО БЫТЬ ИМЕННО ТАК -->
     <div class="modal glass">
         <div class="modal-header">
             <h3>Подтверждение email</h3>
-            <button class="modal-close" onclick="hideModal('verificationModal')">×</button>
+            <button class="modal-close" onclick="hideModal('verification')">×</button>
         </div>
         <div class="modal-body">
             <p style="color: white; text-align: center; margin-bottom: 20px;">
@@ -50,7 +50,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="hideModal('verificationModal')">Отмена</button>
+            <button class="btn-secondary" onclick="hideModal('verification')">Отмена</button>
             <button class="btn-primary" onclick="verifyCode()">Подтвердить</button>
         </div>
     </div>
