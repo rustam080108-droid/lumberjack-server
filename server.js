@@ -7,6 +7,9 @@ const { Resend } = require('resend');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
+// Подключаем SQLiteStore для хранения сессий
+const SQLiteStore = require('connect-sqlite3')(session);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -109,15 +112,24 @@ db.serialize(() => {
 // ========== MIDDLEWARE ==========
 app.use(express.json());
 app.use(express.static('public'));
+
+// Настройка сессии с хранилищем в базе данных
 app.use(session({
+    store: new SQLiteStore({
+        db: 'sessions.sqlite',
+        table: 'sessions',
+        concurrentDB: true
+    }),
     secret: process.env.SESSION_SECRET || 'lumberjack-secret-key',
     resave: false,
     saveUninitialized: false,
     cookie: { 
         maxAge: 24 * 60 * 60 * 1000,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
-    }
+        sameSite: 'lax',
+        httpOnly: true
+    },
+    proxy: process.env.NODE_ENV === 'production'
 }));
 
 // ========== ФУНКЦИЯ ОТПРАВКИ КОДА ==========
