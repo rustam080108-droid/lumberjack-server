@@ -1,71 +1,157 @@
-.profile-dropdown {
-    position: absolute;
-    top: 60px;
-    right: 0;
-    width: 250px;
-    padding: 15px;
-    background: rgba(20, 40, 20, 0.95);
-    border: 1px solid #4caf50;
-    border-radius: 16px;
-    z-index: 1000;
-    color: white;
+/* ========== ПРОФИЛЬ И ДРОПДАУН ========== */
+
+/* Контейнер авторизованного меню */
+.authorized-menu {
+    position: relative;
+    z-index: 10000;  /* Высокий z-index */
 }
 
-.dropdown-item {
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.dropdown-item i {
-    color: #8bc34a;
-    width: 20px;
-}
-
-.dropdown-divider {
-    height: 1px;
+/* Кнопка профиля */
+.profile-btn {
+    padding: 10px 20px;
     background: rgba(255,255,255,0.1);
-    margin: 10px 0;
-}
-
-.profile-dropdown button {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 40px;
     color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 10px;
     transition: 0.3s;
+    position: relative;
+    z-index: 10001;  /* Еще выше */
+}
+
+.profile-btn:hover {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4caf50;
+}
+
+/* ВЫПАДАЮЩЕЕ МЕНЮ - САМЫЙ ВЫСОКИЙ СЛОЙ */
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 280px;
+    background: rgba(10, 25, 10, 0.98);  /* Темнее для контраста */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid #4caf50;
+    border-radius: 20px;
+    padding: 15px;
+    display: none;
+    z-index: 999999 !important;  /* Максимальный z-index */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    /* Убираем прозрачность, которая может мешать */
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Когда меню открыто */
+.profile-dropdown[style*="display: block"] {
+    display: block !important;
+    z-index: 999999 !important;
+}
+
+/* Стрелочка у дропдауна */
+.profile-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: 25px;
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 12px solid #4caf50;
+    z-index: 999999;
+}
+
+/* Элементы внутри дропдауна */
+.dropdown-item {
+    padding: 12px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 15px;
+    position: relative;
+    z-index: 999999;
+}
+
+.dropdown-item i {
+    color: #8bc34a;
+    width: 22px;
+    font-size: 18px;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #4caf50, transparent);
+    margin: 12px 0;
+    position: relative;
+    z-index: 999999;
+}
+
+/* Кнопки в дропдауне */
+.profile-dropdown button {
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 30px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.3s;
+    font-size: 15px;
+    font-weight: 500;
+    position: relative;
+    z-index: 999999;
 }
 
 .profile-dropdown button:hover {
-    background: rgba(76, 175, 80, 0.2);
+    background: rgba(76, 175, 80, 0.3);
+    border-color: #4caf50;
+    transform: translateX(3px);
 }
 
-.logout-btn:hover {
-    background: rgba(244, 67, 54, 0.2) !important;
+.profile-dropdown button i {
+    color: #8bc34a;
+    width: 22px;
 }
 
+/* Кнопка выхода */
+.profile-dropdown .logout-btn:hover {
+    background: rgba(244, 67, 54, 0.3);
+    border-color: #f44336;
+}
+
+/* Элементы инвестиций */
 .invest-item, .history-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
+    padding: 15px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     color: white;
+    transition: 0.3s;
+}
+
+.invest-item:hover, .history-item:hover {
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 12px;
 }
 
 .invest-item:last-child, .history-item:last-child {
     border-bottom: none;
 }
 
+/* Карточка прибыли */
 .profit-card {
     display: flex;
     justify-content: space-between;
@@ -73,54 +159,32 @@
     padding: 20px;
     margin: 20px 0;
     color: white;
-    background: linear-gradient(135deg, #2e7d3220, #1b5e2020);
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.3), rgba(27, 94, 32, 0.3));
     border: 1px solid #4caf50;
+    border-radius: 16px;
+    position: relative;
+    z-index: 1;  /* Обычный слой */
 }
 
 .profit-card button {
-    padding: 10px 20px;
+    padding: 10px 25px;
     background: #4caf50;
     border: none;
-    border-radius: 20px;
+    border-radius: 30px;
     color: white;
+    font-weight: 600;
     cursor: pointer;
     transition: 0.3s;
+    position: relative;
+    z-index: 2;
 }
 
 .profit-card button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 20px #4caf50;
 }
-.profile-dropdown {
-    position: absolute;
-    top: 60px;
-    right: 0;
-    width: 280px;
-    background: rgba(20, 40, 20, 0.98);
-    backdrop-filter: blur(12px);
-    border: 2px solid #4caf50;
-    border-radius: 16px;
-    padding: 15px;
-    display: none;
-    z-index: 999999;  /* ОЧЕНЬ ВЫСОКИЙ z-index */
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
 
-/* Добавь этот стиль для гарантии */
-.profile-dropdown[style*="display: block"] {
-    display: block !important;
-    z-index: 999999 !important;
-}
-
-/* Стрелочка у дропдауна (опционально) */
-.profile-dropdown::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    right: 20px;
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-bottom: 10px solid #4caf50;
+/* Стили для модалок (чтобы не перекрывали дропдаун) */
+.modal-overlay {
+    z-index: 100000 !important;  /* Меньше чем у дропдауна */
 }

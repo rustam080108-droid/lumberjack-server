@@ -156,3 +156,23 @@ body {
     justify-content: space-between;
     color: rgba(255,255,255,0.8);
 }
+/* Гарантия, что дропдаун поверх всего */
+.authorized-menu {
+    position: relative;
+    z-index: 10000;
+}
+
+.profile-dropdown {
+    z-index: 999999 !important;
+}
+
+/* Исправление для контейнера */
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+.header {
+    position: relative;
+    z-index: 1000;
+}
