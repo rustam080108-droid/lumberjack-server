@@ -1,128 +1,79 @@
-// ========== КОШЕЛЕК (ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ) ==========
+// ========== КОШЕЛЕК (УЛЬТРА-ПРОСТАЯ ВЕРСИЯ) ==========
+
+console.log('✅ wallet.js загружен');
 
 let currentRequestId = null;
 let checkInterval = null;
 
 // Пополнение
-async function createDeposit() {
-    // БЕРЁМ userId ИЗ ГЛОБАЛЬНОЙ ПЕРЕМЕННОЙ (она должна быть определена в main.js)
-    if (typeof userId === 'undefined' || !userId) {
-        showAuthModal();
-        showInfo('Для пополнения необходимо войти');
+window.createDeposit = async function() {
+    console.log('▶️ createDeposit вызвана');
+    
+    // Проверяем userId
+    console.log('userId (глобальный):', window.userId);
+    console.log('userData:', window.userData);
+    
+    if (!window.userId) {
+        alert('Ошибка: userId не определён. Вы вошли?');
         return;
     }
     
     const amountInput = document.getElementById('depositSum');
     if (!amountInput) {
-        showError('Поле суммы не найдено');
+        alert('Поле depositSum не найдено!');
         return;
     }
     
     const amount = parseInt(amountInput.value);
+    console.log('Сумма:', amount);
     
     if (isNaN(amount) || amount < 100) {
-        showError('Минимальная сумма 100 ₽');
+        alert('Сумма должна быть не меньше 100');
         return;
     }
     
-    console.log('📝 Создание заявки на пополнение:', { userId, amount });
+    // Отправляем запрос
+    const body = JSON.stringify({
+        userId: window.userId,
+        amount: amount,
+        method: 'card'
+    });
+    console.log('Тело запроса:', body);
     
     try {
         const response = await fetch('/api/deposit/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                userId: userId, 
-                amount: amount, 
-                method: 'card' 
-            })
+            body: body
         });
         
+        console.log('Ответ статус:', response.status);
         const data = await response.json();
-        console.log('✅ Ответ сервера:', data);
+        console.log('Ответ данные:', data);
         
         if (data.success) {
+            alert(`Заявка создана! ID: ${data.requestId}`);
             hideModal('Deposit');
             currentRequestId = data.requestId;
             openChat();
-            showSuccess('Заявка создана!');
-            
-            // ОЧИЩАЕМ поле ввода после успеха
-            amountInput.value = 1000;
         } else {
-            showError('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            alert('Ошибка: ' + (data.error || 'неизвестная'));
         }
-    } catch (error) {
-        console.error('❌ Ошибка при создании заявки:', error);
-        showError('Ошибка соединения с сервером');
+    } catch (e) {
+        console.error('Ошибка fetch:', e);
+        alert('Ошибка соединения');
     }
-}
+};
 
 // Вывод
-async function createWithdraw() {
-    if (!userId) {
-        showAuthModal();
-        showInfo('Для вывода необходимо войти');
-        return;
-    }
-    
-    const amount = parseInt(document.getElementById('withdrawSum')?.value);
-    const card = document.getElementById('cardNumber')?.value.replace(/\s/g, '');
-    
-    if (isNaN(amount) || amount < 100 || amount > 50000) {
-        showError('Сумма от 100 до 50000 ₽');
-        return;
-    }
-    
-    if (!card || card.length < 16) {
-        showError('Введите номер карты');
-        return;
-    }
-    
-    if (amount > userData.balance) {
-        showError('Недостаточно средств');
-        return;
-    }
-    
-    console.log('📝 Создание заявки на вывод:', { userId, amount, card });
-    
-    try {
-        const response = await fetch('/api/withdraw/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, amount, card })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            userData.balance -= amount;
-            
-            await fetch('/api/user/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    balance: userData.balance,
-                    totalFund: userData.totalFund,
-                    lastProfit: userData.lastProfit
-                })
-            });
-            
-            updateUI();
-            hideModal('Withdraw');
-            showSuccess('Заявка создана! Ожидайте обработки.');
-        } else {
-            showError('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-        }
-    } catch (error) {
-        console.error('❌ Ошибка при создании заявки на вывод:', error);
-        showError('Ошибка соединения с сервером');
-    }
-}
+window.createWithdraw = async function() {
+    console.log('▶️ createWithdraw вызвана');
+    alert('Функция вывода временно отключена для диагностики');
+};
 
-// Чат с админом
+// Чат
 function openChat() {
+    console.log('openChat, requestId =', currentRequestId);
     const chat = document.getElementById('chatMessages');
     if (!chat) return;
     
@@ -133,7 +84,7 @@ function openChat() {
     
     checkInterval = setInterval(async () => {
         try {
-            const response = await fetch(`/api/deposit/user/${userId}`);
+            const response = await fetch(`/api/deposit/user/${window.userId}`);
             const data = await response.json();
             const request = data.requests?.find(r => r.id === currentRequestId);
             
@@ -144,17 +95,12 @@ function openChat() {
                 clearInterval(checkInterval);
             }
         } catch (error) {
-            console.error('❌ Ошибка при проверке чата:', error);
+            console.error('Ошибка чата:', error);
         }
     }, 3000);
 }
 
-function confirmPayment() {
-    showSuccess('Ожидайте зачисления средств');
+window.confirmPayment = function() {
+    alert('Ожидайте зачисления');
     document.getElementById('payBtn').style.display = 'none';
-}
-
-// Экспорт
-window.createDeposit = createDeposit;
-window.createWithdraw = createWithdraw;
-window.confirmPayment = confirmPayment;
+};
