@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LumberJack • Админ-панель</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/modals.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Дополнительные стили для админки */
+        /* Дополнительные стили только для админки */
         .admin-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -19,13 +20,12 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(120, 200, 120, 0.25);
             border-radius: 28px;
-            padding: 25px 30px;
+            padding: 20px 30px;
             margin-bottom: 30px;
             color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
         
         .admin-header h1 {
@@ -41,7 +41,7 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -51,9 +51,8 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(120, 200, 120, 0.25);
             border-radius: 24px;
-            padding: 25px;
+            padding: 20px;
             color: white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         
         .stat-card h3 {
@@ -66,7 +65,7 @@
         }
         
         .stat-card .stat-value {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 700;
             color: #ffd700;
         }
@@ -78,10 +77,10 @@
         }
         
         .admin-tab {
-            padding: 15px 30px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
+            padding: 12px 30px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 40px;
             color: white;
             cursor: pointer;
             transition: 0.3s;
@@ -96,91 +95,97 @@
         .admin-tab.active {
             background: linear-gradient(135deg, #4caf50, #2e7d32);
             border-color: #4caf50;
-            box-shadow: 0 0 30px #4caf50;
+            box-shadow: 0 0 20px #4caf50;
         }
         
         .requests-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
+            gap: 20px;
         }
         
         .request-card {
             background: rgba(30, 50, 30, 0.6);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(120, 200, 120, 0.25);
             border-radius: 24px;
-            padding: 25px;
+            padding: 20px;
             color: white;
             transition: 0.3s;
         }
         
         .request-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             border-color: #4caf50;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
         .request-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        .request-badge {
-            padding: 6px 15px;
+        .badge {
+            padding: 5px 15px;
             border-radius: 30px;
             font-size: 12px;
             font-weight: 600;
         }
         
-        .badge-deposit {
+        .badge.deposit {
             background: rgba(76, 175, 80, 0.2);
             color: #4caf50;
             border: 1px solid #4caf50;
         }
         
-        .badge-withdraw {
+        .badge.withdraw {
             background: rgba(244, 67, 54, 0.2);
             color: #f44336;
             border: 1px solid #f44336;
         }
         
-        .badge-pending {
+        .badge.pending {
             background: rgba(255, 193, 7, 0.2);
             color: #ffc107;
             border: 1px solid #ffc107;
         }
         
-        .badge-paid {
+        .badge.paid {
             background: rgba(33, 150, 243, 0.2);
             color: #2196f3;
             border: 1px solid #2196f3;
         }
         
+        .badge.completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        
         .request-row {
             display: flex;
             justify-content: space-between;
-            margin: 12px 0;
             padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.2);
+            margin: 8px 0;
+            background: rgba(0,0,0,0.2);
             border-radius: 12px;
         }
         
         .request-actions {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 15px;
         }
         
         .btn-approve {
             flex: 1;
             background: linear-gradient(135deg, #4caf50, #2e7d32);
             border: none;
-            padding: 14px;
+            padding: 10px;
             border-radius: 40px;
             color: white;
             font-weight: 600;
@@ -190,14 +195,14 @@
         
         .btn-approve:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px #4caf50;
+            box-shadow: 0 5px 20px #4caf50;
         }
         
         .btn-reject {
             flex: 1;
             background: linear-gradient(135deg, #f44336, #b71c1c);
             border: none;
-            padding: 14px;
+            padding: 10px;
             border-radius: 40px;
             color: white;
             font-weight: 600;
@@ -207,29 +212,18 @@
         
         .btn-reject:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px #f44336;
-        }
-        
-        .payment-details-input {
-            margin: 15px 0;
+            box-shadow: 0 5px 20px #f44336;
         }
         
         .payment-details-input textarea {
             width: 100%;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
             color: white;
-            font-size: 14px;
+            margin: 10px 0;
             resize: vertical;
-            min-height: 100px;
-        }
-        
-        .payment-details-input textarea:focus {
-            outline: none;
-            border-color: #4caf50;
-            box-shadow: 0 0 30px #4caf5040;
         }
         
         .login-form {
@@ -241,59 +235,50 @@
             border-radius: 28px;
             padding: 40px;
             color: white;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
         
         .login-form h2 {
             text-align: center;
             margin-bottom: 30px;
-            font-size: 28px;
         }
         
         .login-form input {
             width: 100%;
-            padding: 16px 20px;
-            margin: 10px 0 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 40px;
             color: white;
             font-size: 16px;
         }
         
-        .login-form input:focus {
-            outline: none;
-            border-color: #4caf50;
-            box-shadow: 0 0 30px #4caf5040;
-        }
-        
         .login-form button {
             width: 100%;
-            padding: 16px;
+            padding: 15px;
+            margin-top: 20px;
             background: linear-gradient(135deg, #4caf50, #2e7d32);
             border: none;
             border-radius: 40px;
             color: white;
             font-weight: 600;
-            font-size: 18px;
             cursor: pointer;
             transition: 0.3s;
         }
         
         .login-form button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px #4caf50;
+            box-shadow: 0 5px 20px #4caf50;
         }
         
         .logout-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
             color: white;
-            padding: 12px 25px;
+            padding: 10px 20px;
             border-radius: 40px;
             cursor: pointer;
             transition: 0.3s;
-            font-size: 16px;
         }
         
         .logout-btn:hover {
@@ -302,32 +287,23 @@
         }
         
         .empty-state {
+            grid-column: 1/-1;
             text-align: center;
-            padding: 60px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 18px;
-            grid-column: 1 / -1;
-        }
-        
-        .request-id {
-            font-family: monospace;
-            font-size: 14px;
-            color: #8bc34a;
+            padding: 50px;
+            color: rgba(255,255,255,0.5);
         }
     </style>
 </head>
 <body>
-    <div class="forest-bg">
-        <div class="trees"></div>
-        <div class="fog"></div>
-    </div>
-
+    <div class="forest-bg"></div>
+    
     <!-- Форма входа -->
     <div id="loginSection" class="login-form">
         <h2><i class="fas fa-crown"></i> Админ-панель</h2>
         <input type="text" id="adminUsername" placeholder="Логин" value="admin">
         <input type="password" id="adminPassword" placeholder="Пароль" value="admin123">
         <button onclick="login()">Войти</button>
+        <p style="text-align: center; margin-top: 20px; opacity: 0.6;">Логин: admin / Пароль: admin123</p>
     </div>
 
     <!-- Админ-панель (скрыта до входа) -->
@@ -368,7 +344,7 @@
                 <div class="admin-tab active" onclick="switchTab('deposits')">
                     <i class="fas fa-arrow-down"></i> Пополнения
                 </div>
-                <div class="admin-tab" onclick="switchTab('withdraws')">
+                <div class="admin-tab" onclick="switchTab('withdrawals')">
                     <i class="fas fa-arrow-up"></i> Выводы
                 </div>
             </div>
@@ -431,10 +407,10 @@
             const data = await response.json();
 
             if (data.success) {
-                document.getElementById('totalUsers').textContent = data.stats.totalUsers;
-                document.getElementById('pendingDeposits').textContent = data.stats.pendingDeposits;
-                document.getElementById('pendingWithdraws').textContent = data.stats.pendingWithdraws;
-                document.getElementById('totalBalance').textContent = formatNumber(data.stats.totalBalance) + ' ₽';
+                document.getElementById('totalUsers').textContent = data.totalUsers;
+                document.getElementById('pendingDeposits').textContent = data.pendingDeposits;
+                document.getElementById('pendingWithdraws').textContent = data.pendingWithdraws;
+                document.getElementById('totalBalance').textContent = formatNumber(data.totalBalance) + ' ₽';
             }
         }
 
@@ -471,7 +447,7 @@
             if (req.status === 'pending') {
                 actions = `
                     <div class="payment-details-input">
-                        <textarea id="details-${req.id}" placeholder="Введите реквизиты для оплаты..."></textarea>
+                        <textarea id="details-${req.id}" placeholder="Введите реквизиты для оплаты..." rows="3"></textarea>
                     </div>
                     <div class="request-actions">
                         <button class="btn-approve" onclick="sendPaymentDetails(${req.id})">
@@ -485,7 +461,7 @@
             } else if (req.status === 'paid') {
                 actions = `
                     <div class="request-actions">
-                        <button class="btn-approve" onclick="completeRequest('deposit', ${req.id}, ${req.userId}, ${req.amount})">
+                        <button class="btn-approve" onclick="completeRequest('deposit', ${req.id}, '${req.userId}', ${req.amount})">
                             <i class="fas fa-check"></i> Зачислить
                         </button>
                         <button class="btn-reject" onclick="rejectRequest('deposit', ${req.id})">
@@ -498,20 +474,20 @@
             return `
                 <div class="request-card">
                     <div class="request-header">
-                        <span class="request-badge badge-deposit">
+                        <span class="badge deposit">
                             <i class="fas fa-arrow-down"></i> Пополнение
                         </span>
-                        <span class="request-badge badge-${req.status}">
+                        <span class="badge ${req.status}">
                             ${getStatusText(req.status)}
                         </span>
                     </div>
                     <div class="request-row">
                         <span>ID заявки:</span>
-                        <span class="request-id">#${req.id}</span>
+                        <strong>#${req.id}</strong>
                     </div>
                     <div class="request-row">
                         <span>Пользователь:</span>
-                        <strong>ID: ${req.userId}</strong>
+                        <strong>${req.userId}</strong>
                     </div>
                     <div class="request-row">
                         <span>Сумма:</span>
@@ -519,11 +495,11 @@
                     </div>
                     <div class="request-row">
                         <span>Метод:</span>
-                        <strong>${req.method}</strong>
+                        <strong>${req.method || 'card'}</strong>
                     </div>
                     <div class="request-row">
                         <span>Дата:</span>
-                        <span>${date}</span>
+                        <strong>${date}</strong>
                     </div>
                     ${actions}
                 </div>
@@ -537,7 +513,7 @@
             if (req.status === 'pending') {
                 actions = `
                     <div class="request-actions">
-                        <button class="btn-approve" onclick="completeRequest('withdraw', ${req.id}, ${req.userId}, ${req.amount})">
+                        <button class="btn-approve" onclick="completeRequest('withdraw', ${req.id}, '${req.userId}', ${req.amount})">
                             <i class="fas fa-check"></i> Подтвердить
                         </button>
                         <button class="btn-reject" onclick="rejectRequest('withdraw', ${req.id})">
@@ -550,20 +526,20 @@
             return `
                 <div class="request-card">
                     <div class="request-header">
-                        <span class="request-badge badge-withdraw">
+                        <span class="badge withdraw">
                             <i class="fas fa-arrow-up"></i> Вывод
                         </span>
-                        <span class="request-badge badge-${req.status}">
+                        <span class="badge ${req.status}">
                             ${getStatusText(req.status)}
                         </span>
                     </div>
                     <div class="request-row">
                         <span>ID заявки:</span>
-                        <span class="request-id">#${req.id}</span>
+                        <strong>#${req.id}</strong>
                     </div>
                     <div class="request-row">
                         <span>Пользователь:</span>
-                        <strong>ID: ${req.userId}</strong>
+                        <strong>${req.userId}</strong>
                     </div>
                     <div class="request-row">
                         <span>Сумма:</span>
@@ -571,11 +547,11 @@
                     </div>
                     <div class="request-row">
                         <span>Карта:</span>
-                        <strong>${req.card}</strong>
+                        <strong>${req.card || '****'}</strong>
                     </div>
                     <div class="request-row">
                         <span>Дата:</span>
-                        <span>${date}</span>
+                        <strong>${date}</strong>
                     </div>
                     ${actions}
                 </div>
@@ -656,10 +632,10 @@
 
         // ========== ФОРМАТИРОВАНИЕ ==========
         function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return num ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0';
         }
 
-        // ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
+        // ========== ПРОВЕРКА АВТОРИЗАЦИИ ПРИ ЗАГРУЗКЕ ==========
         async function checkAuth() {
             const response = await fetch('/api/admin/check');
             const data = await response.json();
@@ -677,7 +653,7 @@
             }
         }
 
-        // Проверяем авторизацию при загрузке
+        // Запускаем проверку при загрузке
         checkAuth();
     </script>
 </body>
