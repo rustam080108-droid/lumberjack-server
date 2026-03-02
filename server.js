@@ -63,15 +63,14 @@ db.serialize(() => {
         FOREIGN KEY(userId) REFERENCES users(id)
     )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS history (
+    db.run(`CREATE TABLE IF NOT EXISTS deposit_requests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
-        type TEXT,
+        userId TEXT,  -- ← ИЗМЕНИ С INTEGER НА TEXT
         amount INTEGER,
-        desc TEXT,
-        date TEXT,
-        status TEXT DEFAULT 'completed',
-        FOREIGN KEY(userId) REFERENCES users(id)
+        method TEXT,
+        paymentDetails TEXT,
+        status TEXT DEFAULT 'pending',
+        date TEXT
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS deposit_requests (
