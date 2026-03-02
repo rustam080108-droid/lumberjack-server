@@ -1,0 +1,51 @@
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .guest-menu {
+        width: 100%;
+    }
+    
+    .auth-btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .stats-bar {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .profile-dropdown {
+        right: 0;
+        left: 0;
+        width: 100%;
+    }
+    
+    .shop-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .invest-item, .history-item {
+        flex-direction: column;
+        gap: 5px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .shop-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal {
+        width: 95%;
+    }
+    
+    .ref-link {
+        flex-direction: column;
+    }
+}

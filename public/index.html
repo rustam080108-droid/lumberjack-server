@@ -4,64 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LumberJack • Лесная Империя</title>
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/shop.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Анимированный фон -->
-    <div class="forest-bg">
-        <div class="trees"></div>
-        <div class="fog"></div>
-        <div class="particles"></div>
-    </div>
+    <div class="forest-bg"></div>
 
     <div class="container">
-        <!-- Шапка с навигацией -->
+        <!-- Шапка -->
         <header class="header glass">
             <div class="logo">
                 <i class="fas fa-tree"></i>
                 <span>LUMBERJACK</span>
-                <div class="logo-badge">BETA</div>
             </div>
             
-            <!-- Блок для авторизованного пользователя -->
-            <div id="authorizedMenu" class="user-menu" style="display: none;">
+            <!-- Меню для неавторизованных -->
+            <div id="guestMenu" class="guest-menu">
+                <button class="auth-btn" onclick="showAuthModal()">
+                    <i class="fas fa-sign-in-alt"></i> Вход
+                </button>
+                <button class="auth-btn" onclick="showAuthModal(); switchAuthForm()">
+                    <i class="fas fa-user-plus"></i> Регистрация
+                </button>
+            </div>
+            
+            <!-- Меню для авторизованных -->
+            <div id="authorizedMenu" class="authorized-menu" style="display: none;">
                 <button class="profile-btn" onclick="toggleProfileMenu()">
                     <i class="fas fa-user-circle"></i>
                     <span id="userEmail">user@mail.com</span>
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <div id="profileDropdown" class="profile-dropdown glass">
-                    <div class="dropdown-header">
-                        <div class="dropdown-id">ID: <span id="userId">0000</span></div>
-                        <div class="dropdown-balance"><i class="fas fa-coins"></i> <span id="userBalance">0</span> ₽</div>
+                <div id="profileDropdown" class="profile-dropdown" style="display: none;">
+                    <div class="dropdown-item">
+                        <i class="fas fa-id-card"></i> ID: <span id="userId">0000</span>
                     </div>
-                    <div class="dropdown-stats">
-                        <div class="stat-row">
-                            <span><i class="fas fa-users"></i> Рефералы</span>
-                            <span id="userReferrals">0</span>
-                        </div>
-                        <div class="stat-row">
-                            <span><i class="fas fa-gift"></i> Заработано</span>
-                            <span id="userReferralEarn">0</span>
-                        </div>
+                    <div class="dropdown-item">
+                        <i class="fas fa-coins"></i> Баланс: <span id="userBalance">0</span> ₽
                     </div>
-                    <div class="dropdown-actions">
-                        <button onclick="showProfileModal()"><i class="fas fa-id-card"></i> Мой профиль</button>
-                        <button onclick="showReferralsModal()"><i class="fas fa-link"></i> Рефералы</button>
-                        <button onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+                    <div class="dropdown-item">
+                        <i class="fas fa-users"></i> Рефералы: <span id="userReferrals">0</span>
                     </div>
+                    <div class="dropdown-divider"></div>
+                    <button onclick="showProfileModal()">
+                        <i class="fas fa-user"></i> Профиль
+                    </button>
+                    <button onclick="showReferralsModal()">
+                        <i class="fas fa-link"></i> Рефералы
+                    </button>
+                    <button onclick="logout()" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
                 </div>
-            </div>
-            
-            <!-- Блок для неавторизованного пользователя -->
-            <div id="guestMenu" class="guest-menu">
-                <button class="auth-btn" onclick="showAuthModal('login')"><i class="fas fa-sign-in-alt"></i> Вход</button>
-                <button class="auth-btn register" onclick="showAuthModal('register')"><i class="fas fa-user-plus"></i> Регистрация</button>
             </div>
         </header>
 
-        <!-- Статистика сайта (всегда видна) -->
+        <!-- Статистика сайта -->
         <div class="stats-bar glass">
             <div><i class="fas fa-users"></i> Участников: <span id="totalUsers">0</span></div>
             <div><i class="fas fa-chart-line"></i> Вложений: <span id="totalInvestments">0</span> ₽</div>
@@ -69,249 +75,223 @@
         </div>
 
         <!-- Прогресс лесопилки -->
-        <div class="mill-progress glass">
-            <div class="progress-header">
-                <h3><i class="fas fa-forest"></i> Лесопилка</h3>
-                <div class="level-badge">Уровень 4</div>
+        <div class="progress-block glass">
+            <h3><i class="fas fa-tree"></i> Лесопилка</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
             </div>
-            
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                </div>
-                <div class="progress-info">
-                    <span><i class="fas fa-tree"></i> <span id="totalFund">0</span> ₽</span>
-                    <span><i class="fas fa-bullseye"></i> 2,500,000 ₽</span>
-                </div>
+            <div class="progress-stats">
+                <span>Собрано: <span id="totalFund">0</span> ₽</span>
+                <span>Цель: 2,500,000 ₽</span>
             </div>
         </div>
 
         <!-- Магазин -->
-        <div class="section-header">
-            <h2><i class="fas fa-store"></i> Магазин инструментов</h2>
-            <div class="section-line"></div>
-        </div>
-        
+        <h2 class="section-title">🪓 Магазин инструментов</h2>
         <div class="shop-grid" id="shop"></div>
 
-        <!-- Инвестиции (показываем только авторизованным) -->
+        <!-- Инвестиции (для авторизованных) -->
         <div id="investmentsSection" style="display: none;">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-line"></i> Мои инвестиции</h2>
-                <div class="section-line"></div>
-            </div>
+            <h2 class="section-title">📊 Мои инвестиции</h2>
             <div class="investments-list glass" id="investments"></div>
-        </div>
-
-        <!-- Сбор прибыли (только для авторизованных) -->
-        <div id="profitSection" style="display: none;">
-            <div class="profit-section">
-                <div class="profit-card glass">
-                    <div class="profit-info">
-                        <i class="fas fa-hand-holding-heart"></i>
-                        <div>
-                            <span class="profit-label">Доступно к сбору</span>
-                            <span class="profit-amount"><span id="profitToday">0</span> ₽</span>
-                        </div>
-                    </div>
-                    <button class="profit-btn" onclick="collectProfit()">
-                        <i class="fas fa-arrow-right"></i>
-                        Собрать
-                    </button>
+            
+            <!-- Сбор прибыли -->
+            <div class="profit-card glass">
+                <div>
+                    <span class="profit-label">Доступно к сбору</span>
+                    <span class="profit-amount"><span id="profitToday">0</span> ₽</span>
                 </div>
+                <button onclick="collectProfit()">Собрать</button>
             </div>
-        </div>
-
-        <!-- История (только для авторизованных) -->
-        <div id="historySection" style="display: none;">
-            <div class="section-header">
-                <h2><i class="fas fa-clock"></i> История операций</h2>
-                <div class="section-line"></div>
-            </div>
+            
+            <!-- История -->
+            <h2 class="section-title">📜 История операций</h2>
             <div class="history-list glass" id="history"></div>
         </div>
     </div>
 
-    <!-- МОДАЛКА АВТОРИЗАЦИИ -->
+    <!-- Модалка авторизации -->
     <div class="modal-overlay" id="authModal">
         <div class="modal glass">
             <div class="modal-header">
-                <h3><i class="fas fa-user"></i> <span id="authModalTitle">Вход</span></h3>
-                <button class="modal-close" onclick="hideAuthModal()"><i class="fas fa-times"></i></button>
+                <h3 id="authModalTitle">Вход</h3>
+                <button class="modal-close" onclick="hideAuthModal()">×</button>
             </div>
             <div class="modal-body">
                 <!-- Форма входа -->
-                <div id="loginForm" class="auth-form">
-                    <div class="input-field">
-                        <label>Email</label>
-                        <input type="email" id="loginEmail" placeholder="your@email.com">
-                    </div>
-                    <div class="input-field">
-                        <label>Пароль</label>
-                        <input type="password" id="loginPassword" placeholder="••••••">
-                    </div>
-                    <button class="btn-primary" onclick="login()">Войти</button>
-                    <p class="auth-switch">Нет аккаунта? <a href="#" onclick="switchAuthModal('register')">Зарегистрироваться</a></p>
+                <div id="loginForm">
+                    <input type="email" id="loginEmail" placeholder="Email">
+                    <input type="password" id="loginPassword" placeholder="Пароль">
+                    <button onclick="login()">Войти</button>
+                    <p class="auth-switch">Нет аккаунта? <a href="#" onclick="switchAuthForm()">Регистрация</a></p>
                 </div>
                 
                 <!-- Форма регистрации -->
-                <div id="registerForm" class="auth-form" style="display: none;">
-                    <div class="input-field">
-                        <label>Email</label>
-                        <input type="email" id="regEmail" placeholder="your@email.com">
-                    </div>
-                    <div class="input-field">
-                        <label>Пароль (мин. 6 символов)</label>
-                        <input type="password" id="regPassword" placeholder="••••••">
-                    </div>
-                    <div class="input-field">
-                        <label>Подтверждение пароля</label>
-                        <input type="password" id="regConfirm" placeholder="••••••">
-                    </div>
-                    <button class="btn-primary" onclick="sendVerificationCode()">Получить код</button>
-                    <p class="auth-switch">Уже есть аккаунт? <a href="#" onclick="switchAuthModal('login')">Войти</a></p>
+                <div id="registerForm" style="display: none;">
+                    <input type="email" id="regEmail" placeholder="Email">
+                    <input type="password" id="regPassword" placeholder="Пароль (минимум 6 символов)">
+                    <input type="password" id="regConfirm" placeholder="Подтверждение пароля">
+                    <button onclick="sendVerificationCode()">Получить код</button>
+                    <p class="auth-switch">Уже есть аккаунт? <a href="#" onclick="switchAuthForm()">Вход</a></p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛКА ПОДТВЕРЖДЕНИЯ КОДА -->
+    <!-- Модалка подтверждения кода -->
     <div class="modal-overlay" id="modalVerification">
         <div class="modal glass">
             <div class="modal-header">
                 <h3>Подтверждение email</h3>
-                <button class="modal-close" onclick="hideModal('verification')">×</button>
+                <button class="modal-close" onclick="hideModal('Verification')">×</button>
             </div>
             <div class="modal-body">
-                <p style="color: white; text-align: center; margin-bottom: 20px;">
+                <p style="text-align: center; margin-bottom: 20px;">
                     Код отправлен на <strong id="verificationEmail"></strong>
                 </p>
-                <div class="input-field">
-                    <label>Введите 6-значный код</label>
-                    <input type="text" id="verificationCode" maxlength="6" placeholder="000000" style="text-align: center; font-size: 24px; letter-spacing: 5px;">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="hideModal('verification')">Отмена</button>
-                <button class="btn-primary" onclick="verifyCode()">Подтвердить</button>
+                <input type="text" id="verificationCode" maxlength="6" placeholder="000000">
+                <button onclick="verifyCode()">Подтвердить</button>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛКА ПРОФИЛЯ -->
-    <div class="modal-overlay" id="profileModal">
+    <!-- Модалка профиля -->
+    <div class="modal-overlay" id="modalProfile">
         <div class="modal glass">
             <div class="modal-header">
-                <h3><i class="fas fa-id-card"></i> Профиль пользователя</h3>
-                <button class="modal-close" onclick="hideModal('profile')">×</button>
+                <h3><i class="fas fa-id-card"></i> Профиль</h3>
+                <button class="modal-close" onclick="hideModal('Profile')">×</button>
             </div>
             <div class="modal-body">
-                <div class="profile-info">
-                    <div class="info-row">
-                        <span>ID пользователя:</span>
-                        <span class="info-value" id="profileUserId">USR0000</span>
-                    </div>
-                    <div class="info-row">
-                        <span>Email:</span>
-                        <span class="info-value" id="profileEmail">user@mail.com</span>
-                    </div>
-                    <div class="info-row">
-                        <span>Баланс:</span>
-                        <span class="info-value highlight" id="profileBalance">0 ₽</span>
-                    </div>
-                    <div class="info-row">
-                        <span>Всего вложено:</span>
-                        <span class="info-value" id="profileInvested">0 ₽</span>
-                    </div>
-                    <div class="info-row">
-                        <span>Рефералов:</span>
-                        <span class="info-value" id="profileReferrals">0</span>
-                    </div>
-                    <div class="info-row">
-                        <span>Заработано с рефералов:</span>
-                        <span class="info-value" id="profileReferralEarn">0 ₽</span>
-                    </div>
-                    <div class="info-row">
-                        <span>Дата регистрации:</span>
-                        <span class="info-value" id="profileDate">01.01.2024</span>
-                    </div>
+                <div class="info-row">
+                    <span>ID пользователя:</span>
+                    <span class="info-value" id="profileUserId"></span>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary" onclick="hideModal('profile')">Закрыть</button>
+                <div class="info-row">
+                    <span>Email:</span>
+                    <span class="info-value" id="profileEmail"></span>
+                </div>
+                <div class="info-row">
+                    <span>Баланс:</span>
+                    <span class="info-value" id="profileBalance"></span>
+                </div>
+                <div class="info-row">
+                    <span>Всего вложено:</span>
+                    <span class="info-value" id="profileInvested"></span>
+                </div>
+                <div class="info-row">
+                    <span>Рефералов:</span>
+                    <span class="info-value" id="profileReferrals"></span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛКА РЕФЕРАЛОВ -->
-    <div class="modal-overlay" id="referralsModal">
+    <!-- Модалка рефералов -->
+    <div class="modal-overlay" id="modalReferrals">
         <div class="modal glass">
             <div class="modal-header">
-                <h3><i class="fas fa-link"></i> Реферальная программа</h3>
-                <button class="modal-close" onclick="hideModal('referrals')">×</button>
+                <h3><i class="fas fa-link"></i> Рефералы</h3>
+                <button class="modal-close" onclick="hideModal('Referrals')">×</button>
             </div>
             <div class="modal-body">
-                <div class="referral-stats">
-                    <div class="stat-card-mini">
-                        <span class="stat-label">Приглашено друзей</span>
-                        <span class="stat-value" id="refCount">0</span>
-                    </div>
-                    <div class="stat-card-mini">
-                        <span class="stat-label">Заработано</span>
-                        <span class="stat-value" id="refEarned">0 ₽</span>
-                    </div>
+                <p style="text-align: center; color: #8bc34a;">Приглашай друзей и получай 10% от их пополнений!</p>
+                
+                <div class="info-row">
+                    <span>Приглашено друзей:</span>
+                    <span class="info-value" id="refCount">0</span>
+                </div>
+                <div class="info-row">
+                    <span>Заработано:</span>
+                    <span class="info-value" id="refEarned">0 ₽</span>
                 </div>
                 
-                <div class="referral-link-box">
-                    <p class="ref-description">Приглашай друзей и получай <span class="highlight">10%</span> от их пополнений!</p>
-                    <div class="ref-input-group">
-                        <input type="text" id="refLinkProfile" readonly value="">
-                        <button class="copy-btn" onclick="copyRefFromProfile()">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </div>
+                <div class="ref-link">
+                    <input type="text" id="refLinkProfile" readonly>
+                    <button onclick="copyRef()">Копировать</button>
                 </div>
-                
-                <div class="referral-history">
-                    <h4>История реферальных начислений</h4>
-                    <div id="referralHistory" class="referral-list">
-                        <p class="empty-message">Пока нет начислений</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="hideModal('referrals')">Закрыть</button>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛКИ ДЛЯ ПОКУПКИ/ПОПОЛНЕНИЯ/ВЫВОДА (те же, что и были) -->
+    <!-- Модалка покупки -->
     <div class="modal-overlay" id="modalBuy">
         <div class="modal glass">
             <div class="modal-header">
                 <h3>Подтверждение покупки</h3>
-                <button class="modal-close" onclick="hideModal('buy')">×</button>
+                <button class="modal-close" onclick="hideModal('Buy')">×</button>
             </div>
             <div class="modal-body" id="buyContent"></div>
             <div class="modal-footer">
-                <button class="btn-outline" onclick="hideModal('buy')">Отмена</button>
-                <button class="btn-primary" onclick="confirmBuy()">Подтвердить</button>
+                <button class="auth-btn" style="flex:1;" onclick="hideModal('Buy')">Отмена</button>
+                <button class="auth-btn" style="flex:1;" onclick="confirmBuy()">Купить</button>
             </div>
         </div>
     </div>
 
+    <!-- Модалка пополнения -->
     <div class="modal-overlay" id="modalDeposit">
-        <!-- ... (такая же как была) ... -->
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Пополнение</h3>
+                <button class="modal-close" onclick="hideModal('Deposit')">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="number" id="depositSum" value="1000" min="100" step="100">
+                <p style="color: #aaa; text-align: center;">Минимальная сумма: 100 ₽</p>
+            </div>
+            <div class="modal-footer">
+                <button class="auth-btn" style="flex:1;" onclick="hideModal('Deposit')">Отмена</button>
+                <button class="auth-btn" style="flex:1;" onclick="createDeposit()">Создать заявку</button>
+            </div>
+        </div>
     </div>
 
+    <!-- Модалка вывода -->
     <div class="modal-overlay" id="modalWithdraw">
-        <!-- ... (такая же как была) ... -->
+        <div class="modal glass">
+            <div class="modal-header">
+                <h3><i class="fas fa-minus-circle"></i> Вывод</h3>
+                <button class="modal-close" onclick="hideModal('Withdraw')">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="number" id="withdrawSum" value="1000" min="100" max="50000" step="100">
+                <input type="text" id="cardNumber" placeholder="Номер карты" maxlength="19" oninput="formatCard(this)">
+                <p style="color: #aaa; text-align: center;">Лимит: 100 - 50 000 ₽</p>
+            </div>
+            <div class="modal-footer">
+                <button class="auth-btn" style="flex:1;" onclick="hideModal('Withdraw')">Отмена</button>
+                <button class="auth-btn" style="flex:1;" onclick="createWithdraw()">Вывести</button>
+            </div>
+        </div>
     </div>
 
+    <!-- Модалка чата -->
     <div class="modal-overlay" id="modalChat">
-        <!-- ... (такая же как была) ... -->
+        <div class="modal glass" style="width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-comments"></i> Поддержка</h3>
+                <button class="modal-close" onclick="hideModal('Chat')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-messages" id="chatMessages"></div>
+                <div id="paymentInfo" style="background: #2a5a2a; padding: 15px; border-radius: 12px; margin: 10px 0; display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="auth-btn" style="flex:1;" onclick="hideModal('Chat')">Закрыть</button>
+                <button id="payBtn" class="auth-btn" style="flex:1; display: none;" onclick="confirmPayment()">Я оплатил</button>
+            </div>
+        </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Подключение JavaScript (порядок важен!) -->
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/referrals.js"></script>
+    <script src="js/shop.js"></script>
+    <script src="js/investments.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

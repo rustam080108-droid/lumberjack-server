@@ -1,0 +1,171 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal {
+    width: 400px;
+    max-width: 90%;
+    color: white;
+    animation: modalAppear 0.3s;
+}
+
+@keyframes modalAppear {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 28px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.modal-close:hover {
+    color: white;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    color: white;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.modal-body input:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 20px #4caf50;
+}
+
+.modal-body button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    border: none;
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: 0.3s;
+}
+
+.modal-body button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px #4caf50;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 15px;
+    color: rgba(255,255,255,0.7);
+}
+
+.auth-switch a {
+    color: #4caf50;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+#verificationCode {
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 8px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    margin: 10px 0;
+    color: white;
+}
+
+.info-row .info-value {
+    font-weight: 700;
+    color: #8bc34a;
+}
+
+.ref-link {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.ref-link input {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    color: white;
+    padding: 10px;
+}
+
+.ref-link button {
+    width: auto;
+    padding: 10px 20px;
+    margin: 0;
+}
+
+.chat-messages {
+    min-height: 150px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.chat-messages p {
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}

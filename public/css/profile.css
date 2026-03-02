@@ -1,0 +1,93 @@
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 250px;
+    padding: 15px;
+    background: rgba(20, 40, 20, 0.95);
+    border: 1px solid #4caf50;
+    border-radius: 16px;
+    z-index: 1000;
+    color: white;
+}
+
+.dropdown-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.dropdown-item i {
+    color: #8bc34a;
+    width: 20px;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 10px 0;
+}
+
+.profile-dropdown button {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.3s;
+}
+
+.profile-dropdown button:hover {
+    background: rgba(76, 175, 80, 0.2);
+}
+
+.logout-btn:hover {
+    background: rgba(244, 67, 54, 0.2) !important;
+}
+
+.invest-item, .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: white;
+}
+
+.invest-item:last-child, .history-item:last-child {
+    border-bottom: none;
+}
+
+.profit-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin: 20px 0;
+    color: white;
+    background: linear-gradient(135deg, #2e7d3220, #1b5e2020);
+    border: 1px solid #4caf50;
+}
+
+.profit-card button {
+    padding: 10px 20px;
+    background: #4caf50;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.profit-card button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px #4caf50;
+}
