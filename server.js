@@ -138,7 +138,7 @@ async function sendEmailWithRotation(to, subject, htmlContent) {
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const account = GMAIL_ACCOUNTS[currentAccountIndex];
-        const cleanPassword = account.password.replace(/\s/g, '');
+        const cleanPassword = account.password;
         
         console.log(`📧 Попытка ${attempt + 1}: Отправка через ${account.email}`);
         
