@@ -1,4 +1,3 @@
-require('dotenv').config();  // ← ЭТО ДОЛЖНО БЫТЬ В САМОМ ВЕРХУ!
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -6,6 +5,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
@@ -15,7 +15,6 @@ const db = new sqlite3.Database('./database.sqlite');
 
 // Создание таблиц
 db.serialize(() => {
-    // Пользователи
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId TEXT UNIQUE,
@@ -104,77 +103,77 @@ db.serialize(() => {
     db.run(`INSERT OR IGNORE INTO stats (id, totalUsers, totalInvestments, updatedAt) VALUES (1, 0, 0, ?)`, [new Date().toISOString()]);
 });
 
-// ========== НАСТРОЙКА ТРАНСПОРТА ==========
-function createTransporter(email, password) {
-    return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: email,
-            pass: password.replace(/\s/g, '') // Убираем пробелы из пароля
-        },
-        tls: {
-            rejectUnauthorized: false
-        }
-    });
-}
-
-// ========== МАССИВ АККАУНТОВ (как в твоем Python-скрипте) ==========
+// ========== МАССИВ АККАУНТОВ (ТОЛЬКО ТВОЙ НОВЫЙ РЕАЛЬНЫЙ) ==========
 const GMAIL_ACCOUNTS = [
-    { email: "dzonu8421@gmail.com", password: process.env.GMAIL_PASSWORD_1 },
-    { email: "dzon04023@gmail.com", password: process.env.GMAIL_PASSWORD_2 },
-    { email: "dzon37339@gmail.com", password: process.env.GMAIL_PASSWORD_3 },
-    { email: "dzon30742@gmail.com", password: process.env.GMAIL_PASSWORD_4 },
-    { email: "frankmast213332@gmail.com", password: process.env.GMAIL_PASSWORD_5 }
+    { 
+        email: "rustamvelihanov95@gmail.com", 
+        password: process.env.GMAIL_PASSWORD || "ycwbhklupcjupfoz" // без пробелов!
+    }
 ];
 
-// Текущий индекс аккаунта для ротации
-let currentAccountIndex = 0;
+console.log('📧 Загружено аккаунтов:', GMAIL_ACCOUNTS.length);
+GMAIL_ACCOUNTS.forEach((acc, i) => {
+    console.log(`   ${i+1}. ${acc.email} - ${acc.password ? '✅ пароль есть' : '❌ пароля нет'}`);
+});
 
-// Функция для отправки письма с ротацией аккаунтов
-async function sendEmailWithRotation(to, subject, htmlContent) {
-    const maxAttempts = GMAIL_ACCOUNTS.length;
+// ========== ФУНКЦИЯ ОТПРАВКИ ==========
+async function sendVerificationEmail(toEmail, code) {
+    console.log(`📧 Попытка отправки кода ${code} на ${toEmail}`);
     
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const account = GMAIL_ACCOUNTS[currentAccountIndex];
-        const cleanPassword = account.password;
+    for (let i = 0; i < GMAIL_ACCOUNTS.length; i++) {
+        const account = GMAIL_ACCOUNTS[i];
         
-        console.log(`📧 Попытка ${attempt + 1}: Отправка через ${account.email}`);
+        if (!account.password) {
+            console.log(`⚠️ Аккаунт ${account.email} пропущен (нет пароля)`);
+            continue;
+        }
         
         try {
-            const transporter = createTransporter(account.email, cleanPassword);
+            console.log(`🔄 Попытка ${i+1}: ${account.email}`);
             
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: account.email,
+                    pass: account.password // пароль уже без пробелов
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            });
+
             const mailOptions = {
                 from: `LumberJack 🌲 <${account.email}>`,
-                to: to,
-                subject: subject,
-                html: htmlContent
+                to: toEmail,
+                subject: '🔐 Код подтверждения LumberJack',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a3a1a; color: white; padding: 30px; border-radius: 20px; border: 2px solid #8bc34a;">
+                        <h1 style="color: #8bc34a; text-align: center; font-size: 36px;">🌲 LumberJack</h1>
+                        <h2 style="text-align: center;">Код подтверждения</h2>
+                        <div style="background: #2a5a2a; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0;">
+                            <div style="font-size: 48px; font-weight: bold; letter-spacing: 10px; color: #8bc34a; background: #1e3a1e; padding: 20px; border-radius: 10px; display: inline-block;">
+                                ${code}
+                            </div>
+                        </div>
+                        <p style="text-align: center; font-size: 18px;">Введите этот код на сайте для подтверждения регистрации.</p>
+                        <p style="text-align: center; color: #aaa; margin-top: 20px;">Код действителен 10 минут</p>
+                    </div>
+                `
             };
+
+            const info = await transporter.sendMail(mailOptions);
             
-            await transporter.sendMail(mailOptions);
-            console.log(`✅ Письмо успешно отправлено через ${account.email}`);
-            
-            // Ротация аккаунта для следующего раза
-            currentAccountIndex = (currentAccountIndex + 1) % GMAIL_ACCOUNTS.length;
-            
+            console.log(`✅ УСПЕХ! Письмо отправлено через ${account.email}`);
             return { success: true, usedAccount: account.email };
-            
+
         } catch (error) {
             console.log(`❌ Ошибка с аккаунтом ${account.email}: ${error.message}`);
-            
-            // Переключаем на следующий аккаунт
-            currentAccountIndex = (currentAccountIndex + 1) % GMAIL_ACCOUNTS.length;
-            
-            // Если это была последняя попытка - возвращаем ошибку
-            if (attempt === maxAttempts - 1) {
-                return { success: false, error: error.message };
-            }
-            
-            // Ждем 1 секунду перед следующей попыткой
-            await new Promise(resolve => setTimeout(resolve, 1000));
         }
     }
+    
+    return { success: false, error: 'Все аккаунты не смогли отправить письмо' };
 }
 
 // ========== MIDDLEWARE ==========
@@ -196,60 +195,19 @@ app.post('/api/send-code', async (req, res) => {
         return res.json({ success: false, error: 'Неверный формат email' });
     }
     
-    // Генерируем 6-значный код
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const codeExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 минут
+    const codeExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
     
-    // Сохраняем в сессии
     req.session.tempEmail = email;
     req.session.tempCode = verificationCode;
     req.session.codeExpiry = codeExpiry;
     
-    // Создаем красивое HTML-письмо
-    const htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a3a1a; color: white; padding: 30px; border-radius: 20px; border: 2px solid #8bc34a;">
-            <h1 style="color: #8bc34a; text-align: center; font-size: 36px;">🌲 LumberJack</h1>
-            <h2 style="text-align: center; color: white;">Код подтверждения</h2>
-            
-            <div style="background: #2a5a2a; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0; border: 1px solid #8bc34a;">
-                <div style="font-size: 48px; font-weight: bold; letter-spacing: 10px; color: #8bc34a; background: #1e3a1e; padding: 20px; border-radius: 10px; display: inline-block;">
-                    ${verificationCode}
-                </div>
-            </div>
-            
-            <p style="text-align: center; font-size: 18px;">Введите этот код на сайте для подтверждения регистрации.</p>
-            
-            <div style="background: #2a5a2a; padding: 15px; border-radius: 10px; margin: 20px 0;">
-                <p style="text-align: center; margin: 0; color: #aaa;">Код действителен 10 минут</p>
-                <p style="text-align: center; margin: 5px 0 0; color: #aaa;">Если вы не запрашивали код, проигнорируйте это письмо</p>
-            </div>
-            
-            <hr style="border: 1px solid #2a5a2a; margin: 20px 0;">
-            
-            <p style="text-align: center; color: #8bc34a; font-size: 14px;">🌲 LumberJack - инвестируй в лес будущего</p>
-        </div>
-    `;
-    
-    // Отправляем письмо с ротацией аккаунтов
-    const result = await sendEmailWithRotation(
-        email,
-        'Код подтверждения LumberJack',
-        htmlContent
-    );
+    const result = await sendVerificationEmail(email, verificationCode);
     
     if (result.success) {
-        console.log(`✅ Код ${verificationCode} отправлен на ${email} через ${result.usedAccount}`);
-        
-        // Дополнительно выводим код в консоль для отладки
-        console.log(`📝 Код подтверждения для ${email}: ${verificationCode}`);
-        
-        res.json({ 
-            success: true, 
-            message: 'Код отправлен на почту',
-            debug: process.env.NODE_ENV !== 'production' ? verificationCode : undefined
-        });
+        res.json({ success: true, message: 'Код отправлен на почту' });
     } else {
-        console.error('❌ Все аккаунты не смогли отправить письмо:', result.error);
+        console.error('❌ Ошибка отправки:', result.error);
         res.json({ success: false, error: 'Ошибка отправки кода. Попробуйте позже.' });
     }
 });
@@ -278,13 +236,11 @@ app.post('/api/verify-code', (req, res) => {
         return res.json({ success: false, error: 'Пароль должен быть минимум 6 символов' });
     }
     
-    // Проверяем, не занят ли email
     db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, existingUser) => {
         if (existingUser) {
             return res.json({ success: false, error: 'Email уже зарегистрирован' });
         }
         
-        // Создаем пользователя
         db.get(`SELECT COUNT(*) as count FROM users`, (err, result) => {
             const userNumber = (result.count + 1).toString().padStart(4, '0');
             const userId = `USR${userNumber}`;
@@ -301,12 +257,10 @@ app.post('/api/verify-code', (req, res) => {
                         return res.json({ success: false, error: err.message });
                     }
                     
-                    // Очищаем сессию
                     delete req.session.tempEmail;
                     delete req.session.tempCode;
                     delete req.session.codeExpiry;
                     
-                    // Обновляем статистику
                     db.get(`SELECT COUNT(*) as count FROM users WHERE emailConfirmed = 1`, (err, statsResult) => {
                         db.run(`UPDATE stats SET totalUsers = ?, updatedAt = ? WHERE id = 1`, [statsResult.count, new Date().toISOString()]);
                     });
@@ -588,8 +542,9 @@ app.get('/api/admin/stats', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Сервер запущен на http://localhost:${PORT}`);
     console.log(`📧 Загружено ${GMAIL_ACCOUNTS.length} аккаунтов Gmail`);
-    console.log(`🔄 Будет использоваться ротация аккаунтов`);
     GMAIL_ACCOUNTS.forEach((acc, i) => {
-        console.log(`   ${i+1}. ${acc.email}`);
+        console.log(`   ${i+1}. ${acc.email} - ${acc.password ? '✅ пароль есть' : '❌ пароля нет'}`);
     });
+    console.log(`📁 Админ-панель: http://localhost:${PORT}/admin.html`);
+    console.log(`🌲 Основной сайт: http://localhost:${PORT}/index.html`);
 });
