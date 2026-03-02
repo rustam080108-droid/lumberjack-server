@@ -5,7 +5,10 @@ let userData = {
     totalFund: 0,
     referrals: 0,
     referralEarn: 0,
-    lastProfit: new Date().toISOString()
+    lastProfit: new Date().toISOString(),
+    email: '',
+    createdAt: new Date().toISOString(),
+    refCode: ''
 };
 let items = [];
 let investments = [];
@@ -20,7 +23,7 @@ const shopItems = [
     { id: 5, name: 'Проф. техника', icon: '🚜', price: 50000, profit: '2-3%' }
 ];
 
-// Глобальные переменные для модалок
+// Глобальные переменные
 let selectedItem = null;
 let currentRequestId = null;
 let checkInterval = null;
@@ -31,46 +34,125 @@ let currentEmail = '';
 window.onload = async function() {
     console.log('Страница загружена');
     
+    // Загружаем статистику (всегда)
+    loadStats();
+    
+    // Проверяем авторизацию
     const savedUserId = localStorage.getItem('userId');
     if (savedUserId) {
         userId = savedUserId;
         await loadUserData();
-        hideAuthModal();
+        showAuthorizedMenu();
+        showPrivateSections();
     } else {
-        showAuthModal();
+        showGuestMenu();
+        hidePrivateSections();
     }
     
-    loadStats();
-    
+    // Проверяем реферала
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
     if (ref) {
         sessionStorage.setItem('referrer', ref);
     }
     
-    updateUI();
+    // Отрисовываем магазин (всегда)
     renderShop();
-    renderInvestments();
-    renderHistory();
     
+    // Запускаем периодическое обновление
     setInterval(loadStats, 30000);
     setInterval(checkRequests, 5000);
 };
 
+// ========== УПРАВЛЕНИЕ МЕНЮ ==========
+function showGuestMenu() {
+    document.getElementById('guestMenu').style.display = 'flex';
+    document.getElementById('authorizedMenu').style.display = 'none';
+}
+
+function showAuthorizedMenu() {
+    document.getElementById('guestMenu').style.display = 'none';
+    document.getElementById('authorizedMenu').style.display = 'block';
+    
+    // Обновляем данные в шапке
+    document.getElementById('userEmail').textContent = userData.email || 'user';
+    document.getElementById('userId').textContent = userId || '0000';
+    document.getElementById('userBalance').textContent = formatNumber(userData.balance);
+    document.getElementById('userReferrals').textContent = userData.referrals;
+    document.getElementById('userReferralEarn').textContent = formatNumber(userData.referralEarn) + ' ₽';
+}
+
+function showPrivateSections() {
+    document.getElementById('investmentsSection').style.display = 'block';
+    document.getElementById('profitSection').style.display = 'block';
+    document.getElementById('historySection').style.display = 'block';
+}
+
+function hidePrivateSections() {
+    document.getElementById('investmentsSection').style.display = 'none';
+    document.getElementById('profitSection').style.display = 'none';
+    document.getElementById('historySection').style.display = 'none';
+}
+
+function toggleProfileMenu() {
+    const dropdown = document.getElementById('profileDropdown');
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+}
+
+// Закрытие дропдауна при клике вне
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-btn') && !e.target.closest('.profile-dropdown')) {
+        const dropdown = document.getElementById('profileDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+    }
+});
+
+// ========== МОДАЛКИ ПРОФИЛЯ ==========
+function showProfileModal() {
+    document.getElementById('profileUserId').textContent = userId || 'USR0000';
+    document.getElementById('profileEmail').textContent = userData.email || 'не указан';
+    document.getElementById('profileBalance').textContent = formatNumber(userData.balance) + ' ₽';
+    document.getElementById('profileInvested').textContent = formatNumber(userData.totalFund) + ' ₽';
+    document.getElementById('profileReferrals').textContent = userData.referrals;
+    document.getElementById('profileReferralEarn').textContent = formatNumber(userData.referralEarn) + ' ₽';
+    document.getElementById('profileDate').textContent = new Date(userData.createdAt || Date.now()).toLocaleDateString();
+    
+    showModal('profile');
+}
+
+function showReferralsModal() {
+    document.getElementById('refCount').textContent = userData.referrals;
+    document.getElementById('refEarned').textContent = formatNumber(userData.referralEarn) + ' ₽';
+    document.getElementById('refLinkProfile').value = `${window.location.origin}/?ref=${userData.refCode || ''}`;
+    
+    // Здесь можно загрузить историю реферальных начислений
+    loadReferralHistory();
+    
+    showModal('referrals');
+}
+
+function copyRefFromProfile() {
+    const input = document.getElementById('refLinkProfile');
+    input.select();
+    navigator.clipboard.writeText(input.value);
+    showSuccess('Ссылка скопирована!');
+}
+
+async function loadReferralHistory() {
+    // Заглушка - позже можно добавить API для истории рефералов
+    const historyDiv = document.getElementById('referralHistory');
+    historyDiv.innerHTML = '<p class="empty-message">Пока нет начислений</p>';
+}
+
 // ========== ФУНКЦИИ ДЛЯ МОДАЛОК ==========
 function showModal(type) {
-    console.log('Открываем модалку:', type);
     const modal = document.getElementById(`modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
     if (modal) {
         modal.style.display = 'flex';
-        console.log('Модалка найдена и открыта');
-    } else {
-        console.error('Модалка не найдена:', `modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
     }
 }
 
 function hideModal(type) {
-    console.log('Закрываем модалку:', type);
     if (type === 'chat' && checkInterval) {
         clearInterval(checkInterval);
         checkInterval = null;
@@ -94,7 +176,16 @@ document.addEventListener('click', function(e) {
 });
 
 // ========== АВТОРИЗАЦИЯ ==========
-function showAuthModal() {
+function showAuthModal(type) {
+    if (type === 'login') {
+        document.getElementById('authModalTitle').textContent = 'Вход';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
+    } else {
+        document.getElementById('authModalTitle').textContent = 'Регистрация';
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
+    }
     document.getElementById('authModal').style.display = 'flex';
 }
 
@@ -102,31 +193,27 @@ function hideAuthModal() {
     document.getElementById('authModal').style.display = 'none';
 }
 
-function switchAuthTab(tab) {
-    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.auth-content').forEach(c => c.style.display = 'none');
-    
-    if (tab === 'login') {
-        document.querySelectorAll('.auth-tab')[0].classList.add('active');
-        document.getElementById('loginForm').style.display = 'flex';
+function switchAuthModal(type) {
+    if (type === 'login') {
+        document.getElementById('authModalTitle').textContent = 'Вход';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
     } else {
-        document.querySelectorAll('.auth-tab')[1].classList.add('active');
-        document.getElementById('registerForm').style.display = 'flex';
+        document.getElementById('authModalTitle').textContent = 'Регистрация';
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
     }
 }
 
-// ========== ДВУХЭТАПНАЯ РЕГИСТРАЦИЯ ==========
+// ========== РЕГИСТРАЦИЯ ==========
 async function sendVerificationCode() {
     const email = document.getElementById('regEmail').value;
-    
-    console.log('sendVerificationCode вызван с email:', email);
     
     if (!email) {
         showError('Введите email');
         return;
     }
     
-    // Отправляем запрос на сервер
     const response = await fetch('/api/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -134,17 +221,12 @@ async function sendVerificationCode() {
     });
     
     const data = await response.json();
-    console.log('Ответ от сервера:', data);
     
     if (data.success) {
-        // Скрываем окно регистрации
         hideAuthModal();
-        
-        // Показываем окно с кодом
         document.getElementById('verificationEmail').textContent = email;
         currentEmail = email;
         showModal('verification');
-        
         showSuccess('Код отправлен на почту!');
     } else {
         showError(data.error);
@@ -155,8 +237,6 @@ async function verifyCode() {
     const code = document.getElementById('verificationCode').value;
     const password = document.getElementById('regPassword').value;
     const confirm = document.getElementById('regConfirm').value;
-    
-    console.log('verifyCode вызван с кодом:', code);
     
     if (!code || code.length !== 6) {
         showError('Введите 6-значный код');
@@ -184,14 +264,12 @@ async function verifyCode() {
     });
     
     const data = await response.json();
-    console.log('Ответ от сервера при проверке кода:', data);
     
     if (data.success) {
         hideModal('verification');
         showSuccess('Регистрация успешна! Теперь войдите в аккаунт.');
-        switchAuthTab('login');
+        showAuthModal('login');
         
-        // Очищаем поля
         document.getElementById('regEmail').value = '';
         document.getElementById('regPassword').value = '';
         document.getElementById('regConfirm').value = '';
@@ -201,6 +279,7 @@ async function verifyCode() {
     }
 }
 
+// ========== ВХОД ==========
 async function login() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
@@ -219,13 +298,17 @@ async function login() {
     const data = await response.json();
     if (data.success) {
         userId = data.user.id;
+        userData.email = data.user.email;
+        userData.balance = data.user.balance;
         localStorage.setItem('userId', userId);
+        
         await loadUserData();
         hideAuthModal();
-        updateUI();
-        renderShop();
+        showAuthorizedMenu();
+        showPrivateSections();
         renderInvestments();
         renderHistory();
+        updateUI();
         showSuccess('Вход выполнен успешно!');
     } else {
         showError(data.error);
@@ -235,7 +318,19 @@ async function login() {
 function logout() {
     localStorage.removeItem('userId');
     userId = null;
-    showAuthModal();
+    userData = {
+        balance: 0,
+        totalFund: 0,
+        referrals: 0,
+        referralEarn: 0,
+        lastProfit: new Date().toISOString(),
+        email: '',
+        createdAt: new Date().toISOString(),
+        refCode: ''
+    };
+    showGuestMenu();
+    hidePrivateSections();
+    showSuccess('Вы вышли из аккаунта');
 }
 
 // ========== ЗАГРУЗКА ДАННЫХ ==========
@@ -246,13 +341,19 @@ async function loadUserData() {
     const data = await response.json();
     
     if (data.success) {
-        userData = data.user;
+        userData = {
+            ...userData,
+            ...data.user,
+            email: data.user.email || userData.email,
+            createdAt: data.user.createdAt || userData.createdAt
+        };
         items = data.items || [];
         investments = data.investments || [];
         history = data.history || [];
         updateUI();
         renderInvestments();
         renderHistory();
+        showAuthorizedMenu();
     }
 }
 
@@ -272,19 +373,17 @@ async function loadStats() {
 // ========== UI ОБНОВЛЕНИЕ ==========
 function updateUI() {
     const balanceEl = document.getElementById('balance');
-    const userIdEl = document.getElementById('userId');
-    const referralsEl = document.getElementById('referrals');
-    const referralEarnEl = document.getElementById('referralEarn');
     const totalFundEl = document.getElementById('totalFund');
-    const refLinkEl = document.getElementById('refLink');
     const progressFill = document.getElementById('progressFill');
+    const userBalanceEl = document.getElementById('userBalance');
+    const userReferralsEl = document.getElementById('userReferrals');
+    const userReferralEarnEl = document.getElementById('userReferralEarn');
     
     if (balanceEl) balanceEl.innerText = formatNumber(userData.balance);
-    if (userIdEl) userIdEl.innerText = userId || 'Не авторизован';
-    if (referralsEl) referralsEl.innerText = userData.referrals;
-    if (referralEarnEl) referralEarnEl.innerText = formatNumber(userData.referralEarn);
     if (totalFundEl) totalFundEl.innerText = formatNumber(userData.totalFund);
-    if (refLinkEl) refLinkEl.value = `${window.location.origin}/?ref=${userData.refCode || ''}`;
+    if (userBalanceEl) userBalanceEl.innerText = formatNumber(userData.balance);
+    if (userReferralsEl) userReferralsEl.innerText = userData.referrals;
+    if (userReferralEarnEl) userReferralEarnEl.innerText = formatNumber(userData.referralEarn) + ' ₽';
     
     const percent = Math.min(100, Math.floor((userData.totalFund / 2500000) * 100));
     if (progressFill) progressFill.style.width = percent + '%';
@@ -342,7 +441,8 @@ function renderShop() {
 
 function openBuy(id) {
     if (!userId) {
-        showError('Сначала войдите в систему');
+        showAuthModal('register');
+        showInfo('Для покупки необходимо зарегистрироваться');
         return;
     }
     
@@ -603,7 +703,8 @@ function formatCard(input) {
 
 async function createDeposit() {
     if (!userId) {
-        showError('Сначала войдите в систему');
+        showAuthModal('register');
+        showInfo('Для пополнения необходимо зарегистрироваться');
         return;
     }
     
@@ -639,7 +740,8 @@ async function createDeposit() {
 
 async function createWithdraw() {
     if (!userId) {
-        showError('Сначала войдите в систему');
+        showAuthModal('register');
+        showInfo('Для вывода необходимо зарегистрироваться');
         return;
     }
     
@@ -820,8 +922,14 @@ window.openBuy = openBuy;
 window.confirmBuy = confirmBuy;
 window.collectProfit = collectProfit;
 window.copyRef = copyRef;
-window.switchAuthTab = switchAuthTab;
+window.copyRefFromProfile = copyRefFromProfile;
+window.showAuthModal = showAuthModal;
+window.hideAuthModal = hideAuthModal;
+window.switchAuthModal = switchAuthModal;
 window.sendVerificationCode = sendVerificationCode;
 window.verifyCode = verifyCode;
 window.login = login;
 window.logout = logout;
+window.toggleProfileMenu = toggleProfileMenu;
+window.showProfileModal = showProfileModal;
+window.showReferralsModal = showReferralsModal;
