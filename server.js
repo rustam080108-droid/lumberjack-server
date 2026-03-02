@@ -412,8 +412,20 @@ app.post('/api/admin/logout', (req, res) => {
 app.get('/api/admin/requests', (req, res) => {
     if (!req.session.admin) return res.json({ success: false, error: 'Не авторизован' });
     
-    db.all(`SELECT * FROM deposit_requests WHERE status IN ('pending', 'paid') ORDER BY date DESC`, (err, deposits) => {
-        db.all(`SELECT * FROM withdraw_requests WHERE status = 'pending' ORDER BY date DESC`, (err, withdraws) => {
+    // Убираем фильтр по статусу, показываем все заявки
+    db.all(`SELECT * FROM deposit_requests ORDER BY date DESC`, (err, deposits) => {
+        if (err) {
+            console.error('Ошибка получения заявок:', err);
+            return res.json({ deposits: [], withdraws: [] });
+        }
+        
+        db.all(`SELECT * FROM withdraw_requests ORDER BY date DESC`, (err, withdraws) => {
+            if (err) {
+                console.error('Ошибка получения выводов:', err);
+                return res.json({ deposits: deposits || [], withdraws: [] });
+            }
+            
+            console.log(`📊 Найдено заявок: ${deposits?.length || 0}, выводов: ${withdraws?.length || 0}`);
             res.json({ 
                 deposits: deposits || [], 
                 withdraws: withdraws || [] 
