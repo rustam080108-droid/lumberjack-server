@@ -1608,3 +1608,102 @@ body {
 
 .dropdown-actions {
     display: flex;
+    /* ========== ИСПРАВЛЕНИЕ ДРОПДАУНА ========== */
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 280px;
+    background: rgba(20, 40, 20, 0.98);
+    backdrop-filter: blur(12px);
+    border: 1px solid #4caf50;
+    border-radius: 16px;
+    padding: 15px;
+    display: none;
+    z-index: 9999;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.profile-dropdown[style*="display: block"] {
+    display: block !important;
+}
+
+.dropdown-header {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 10px;
+}
+
+.dropdown-id {
+    font-size: 14px;
+    color: #8bc34a;
+    margin-bottom: 5px;
+}
+
+.dropdown-balance {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffd700;
+}
+
+.dropdown-balance i {
+    margin-right: 5px;
+    color: #ffd700;
+}
+
+.dropdown-stats {
+    padding: 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    color: white;
+}
+
+.stat-row span:first-child {
+    opacity: 0.8;
+}
+
+.stat-row span:last-child {
+    font-weight: 700;
+    color: #8bc34a;
+}
+
+.dropdown-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dropdown-actions button {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 40px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.dropdown-actions button:hover {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4caf50;
+    transform: translateY(-2px);
+}
+
+.dropdown-actions .logout-btn:hover {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: #f44336;
+}}
